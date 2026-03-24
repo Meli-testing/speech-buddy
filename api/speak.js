@@ -10,7 +10,7 @@ export default async function handler(req, res) {
   if (!API_KEY) return res.status(500).json({ error: 'No API key' });
 
   const VOICES = {
-    'ro-RO': 'JBFqnCBsd6RMkjVDRZzb', // George - testing
+    'ro-RO': 'EXAVITQu4vr4xnSDxMaL', // Sarah
     'en-GB': 'EXAVITQu4vr4xnSDxMaL', // Sarah
     'nl-NL': 'EXAVITQu4vr4xnSDxMaL', // Sarah
   };
