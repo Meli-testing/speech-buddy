@@ -29,7 +29,8 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         text: cleanText,
-        model_id: 'eleven_multilingual_v2',
+        model_id: 'eleven_turbo_v2_5',
+        language_code: lang.split('-')[0], // 'ro', 'en', 'nl'
         voice_settings: {
           stability: 0.55,
           similarity_boost: 0.75,
