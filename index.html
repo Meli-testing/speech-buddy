@@ -1163,45 +1163,64 @@ async function fetchEncouragement(score, total) {
   } catch { document.getElementById('reward-msg').textContent = fallback[currentLang]; }
 }
 
-// ======================== SPEECH (ElevenLabs) ========================
-const audioCache = new Map();
+// ======================== SPEECH (Local Audio Files) ========================
 let currentAudio = null;
 
-async function speak(text, lang) {
+// Map word text to audio file slug
+const AUDIO_SLUGS = {
+  // Romanian
+  'pisică':'pisica','câine':'caine','pasăre':'pasare','pește':'peste',
+  'cal':'cal','iepure':'iepure','elefant':'elefant','leu':'leu',
+  'broască':'brosca','vacă':'vaca','măr':'mar','banană':'banana',
+  'portocală':'portocala','căpșună':'capsuna','struguri':'struguri',
+  'lămâie':'lamaie','piersică':'piersica','cireșe':'cirese',
+  'roșu':'rosu','albastru':'albastru','verde':'verde','galben':'galben',
+  'portocaliu':'portocaliu','mov':'mov','alb':'alb','negru':'negru',
+  'ochi':'ochi','ureche':'ureche','nas':'nas','gură':'gura',
+  'dinte':'dinte','mână':'mana','picior':'picior','față':'fata',
+  // English
+  'cat':'pisica','dog':'caine','bird':'pasare','fish':'peste',
+  'horse':'cal','rabbit':'iepure','elephant':'elefant','lion':'leu',
+  'frog':'brosca','cow':'vaca','apple':'mar','banana':'banana',
+  'orange':'portocala','strawberry':'capsuna','grapes':'struguri',
+  'lemon':'lamaie','peach':'piersica','cherries':'cirese',
+  'red':'rosu','blue':'albastru','green':'verde','yellow':'galben',
+  'purple':'mov','white':'alb','black':'negru',
+  'eye':'ochi','ear':'ureche','nose':'nas','mouth':'gura',
+  'tooth':'dinte','hand':'mana','foot':'picior','face':'fata',
+  // Dutch
+  'kat':'pisica','hond':'caine','vogel':'pasare','vis':'peste',
+  'paard':'cal','konijn':'iepure','olifant':'elefant','leeuw':'leu',
+  'kikker':'brosca','koe':'vaca','appel':'mar','banaan':'banana',
+  'sinaasappel':'portocala','aardbei':'capsuna','druiven':'struguri',
+  'citroen':'lamaie','perzik':'piersica','kersen':'cirese',
+  'rood':'rosu','blauw':'albastru','groen':'verde','geel':'galben',
+  'oranje':'portocaliu','paars':'mov','wit':'alb','zwart':'negru',
+  'oog':'ochi','oor':'ureche','neus':'nas','mond':'gura',
+  'tand':'dinte','voet':'picior','gezicht':'fata',
+};
+
+const LANG_CODE = { 'ro-RO':'ro', 'en-GB':'en', 'nl-NL':'nl' };
+
+function speak(text, lang) {
   if (!text) return;
-  // Stop any current audio
   if (currentAudio) { currentAudio.pause(); currentAudio = null; }
 
-  const cacheKey = text + '_' + lang;
+  const slug = AUDIO_SLUGS[text.toLowerCase()] || AUDIO_SLUGS[text];
+  const langCode = LANG_CODE[lang] || 'en';
 
-  // Use cached audio URL if available
-  if (audioCache.has(cacheKey)) {
-    const audio = new Audio(audioCache.get(cacheKey));
+  if (slug) {
+    // Use pre-generated audio file
+    const audio = new Audio(`/audio/${slug}-${langCode}.mp3`);
     currentAudio = audio;
     audio.play().catch(() => fallbackSpeak(text, lang));
-    return;
-  }
-
-  try {
-    const res = await fetch('/api/speak', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text, lang })
-    });
-    if (!res.ok) throw new Error('API error');
-    const blob = await res.blob();
-    const url  = URL.createObjectURL(blob);
-    audioCache.set(cacheKey, url);
-    const audio = new Audio(url);
-    currentAudio = audio;
-    audio.play().catch(() => fallbackSpeak(text, lang));
-  } catch (e) {
-    console.warn('ElevenLabs fallback:', e);
+  } else {
+    // Fallback to browser speech for anything not in audio files (tips, instructions etc)
     fallbackSpeak(text, lang);
   }
 }
 
-// Browser fallback if ElevenLabs fails
+// Browser fallback for tips, instructions, mouth exercises
 function fallbackSpeak(text, lang) {
   if (!('speechSynthesis' in window)) return;
   window.speechSynthesis.cancel();
