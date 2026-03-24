@@ -163,6 +163,7 @@
     .word-emoji   { font-size: var(--word-emoji); display: block; margin-bottom: 9px; }
     .word-text    { font-size: var(--word-font); font-weight: 700; color: var(--text); display: block; }
     .word-listen  { margin-top: 8px; display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; background: #FFF3E0; border-radius: 20px; font-size: 0.76rem; font-weight: 600; color: var(--primary); }
+    .word-syllables { margin-top: 5px; font-size: 0.78rem; color: var(--secondary-dark); font-weight: 700; letter-spacing: 0.03em; display: block; }
 
     /* ===== MONDMOTORIEK (kleintjes only) ===== */
     .mouth-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding-bottom: 24px; }
@@ -606,10 +607,48 @@ const UI = {
 
 // ======================== WORD DATA ========================
 const WORDS = {
-  animals:[ {emoji:'🐱',RO:'pisică',EN:'cat',NL:'kat'},{emoji:'🐶',RO:'câine',EN:'dog',NL:'hond'},{emoji:'🐦',RO:'pasăre',EN:'bird',NL:'vogel'},{emoji:'🐟',RO:'pește',EN:'fish',NL:'vis'},{emoji:'🐎',RO:'cal',EN:'horse',NL:'paard'},{emoji:'🐇',RO:'iepure',EN:'rabbit',NL:'konijn'},{emoji:'🐘',RO:'elefant',EN:'elephant',NL:'olifant'},{emoji:'🦁',RO:'leu',EN:'lion',NL:'leeuw'},{emoji:'🐸',RO:'broască',EN:'frog',NL:'kikker'},{emoji:'🐮',RO:'vacă',EN:'cow',NL:'koe'} ],
-  fruits:  [ {emoji:'🍎',RO:'măr',EN:'apple',NL:'appel'},{emoji:'🍌',RO:'banană',EN:'banana',NL:'banaan'},{emoji:'🍊',RO:'portocală',EN:'orange',NL:'sinaasappel'},{emoji:'🍓',RO:'căpșună',EN:'strawberry',NL:'aardbei'},{emoji:'🍇',RO:'struguri',EN:'grapes',NL:'druiven'},{emoji:'🍋',RO:'lămâie',EN:'lemon',NL:'citroen'},{emoji:'🍑',RO:'piersică',EN:'peach',NL:'perzik'},{emoji:'🍒',RO:'cireșe',EN:'cherries',NL:'kersen'} ],
-  colors:  [ {emoji:'🔴',RO:'roșu',EN:'red',NL:'rood'},{emoji:'🔵',RO:'albastru',EN:'blue',NL:'blauw'},{emoji:'🟢',RO:'verde',EN:'green',NL:'groen'},{emoji:'🟡',RO:'galben',EN:'yellow',NL:'geel'},{emoji:'🟠',RO:'portocaliu',EN:'orange',NL:'oranje'},{emoji:'🟣',RO:'mov',EN:'purple',NL:'paars'},{emoji:'⚪',RO:'alb',EN:'white',NL:'wit'},{emoji:'⚫',RO:'negru',EN:'black',NL:'zwart'} ],
-  body:    [ {emoji:'👁️',RO:'ochi',EN:'eye',NL:'oog'},{emoji:'👂',RO:'ureche',EN:'ear',NL:'oor'},{emoji:'👃',RO:'nas',EN:'nose',NL:'neus'},{emoji:'👄',RO:'gură',EN:'mouth',NL:'mond'},{emoji:'🦷',RO:'dinte',EN:'tooth',NL:'tand'},{emoji:'✋',RO:'mână',EN:'hand',NL:'hand'},{emoji:'🦶',RO:'picior',EN:'foot',NL:'voet'},{emoji:'🙂',RO:'față',EN:'face',NL:'gezicht'} ],
+  animals:[
+    {emoji:'🐱',RO:'pisică',    EN:'cat',      NL:'kat',     SYL:{RO:'pi·si·că',   EN:'cat',         NL:'kat'}},
+    {emoji:'🐶',RO:'câine',     EN:'dog',      NL:'hond',    SYL:{RO:'câi·ne',     EN:'dog',         NL:'hond'}},
+    {emoji:'🐦',RO:'pasăre',    EN:'bird',     NL:'vogel',   SYL:{RO:'pa·să·re',   EN:'bird',        NL:'vo·gel'}},
+    {emoji:'🐟',RO:'pește',     EN:'fish',     NL:'vis',     SYL:{RO:'peș·te',     EN:'fish',        NL:'vis'}},
+    {emoji:'🐎',RO:'cal',       EN:'horse',    NL:'paard',   SYL:{RO:'cal',        EN:'horse',       NL:'paard'}},
+    {emoji:'🐇',RO:'iepure',    EN:'rabbit',   NL:'konijn',  SYL:{RO:'ie·pu·re',   EN:'rab·bit',     NL:'ko·nijn'}},
+    {emoji:'🐘',RO:'elefant',   EN:'elephant', NL:'olifant', SYL:{RO:'e·le·fant',  EN:'el·e·phant',  NL:'o·li·fant'}},
+    {emoji:'🦁',RO:'leu',       EN:'lion',     NL:'leeuw',   SYL:{RO:'leu',        EN:'li·on',       NL:'leeuw'}},
+    {emoji:'🐸',RO:'broască',   EN:'frog',     NL:'kikker',  SYL:{RO:'broaș·că',   EN:'frog',        NL:'kik·ker'}},
+    {emoji:'🐮',RO:'vacă',      EN:'cow',      NL:'koe',     SYL:{RO:'va·că',      EN:'cow',         NL:'koe'}},
+  ],
+  fruits:[
+    {emoji:'🍎',RO:'măr',       EN:'apple',      NL:'appel',       SYL:{RO:'măr',          EN:'ap·ple',      NL:'ap·pel'}},
+    {emoji:'🍌',RO:'banană',    EN:'banana',     NL:'banaan',      SYL:{RO:'ba·na·nă',     EN:'ba·na·na',    NL:'ba·naan'}},
+    {emoji:'🍊',RO:'portocală', EN:'orange',     NL:'sinaasappel', SYL:{RO:'por·to·ca·lă', EN:'or·ange',     NL:'si·naas·ap·pel'}},
+    {emoji:'🍓',RO:'căpșună',   EN:'strawberry', NL:'aardbei',     SYL:{RO:'căp·șu·nă',    EN:'straw·ber·ry',NL:'aard·bei'}},
+    {emoji:'🍇',RO:'struguri',  EN:'grapes',     NL:'druiven',     SYL:{RO:'stru·gu·ri',   EN:'grapes',      NL:'drui·ven'}},
+    {emoji:'🍋',RO:'lămâie',    EN:'lemon',      NL:'citroen',     SYL:{RO:'lă·mâ·ie',     EN:'lem·on',      NL:'ci·troen'}},
+    {emoji:'🍑',RO:'piersică',  EN:'peach',      NL:'perzik',      SYL:{RO:'pier·si·că',   EN:'peach',       NL:'per·zik'}},
+    {emoji:'🍒',RO:'cireșe',    EN:'cherries',   NL:'kersen',      SYL:{RO:'ci·re·șe',     EN:'cher·ries',   NL:'ker·sen'}},
+  ],
+  colors:[
+    {emoji:'🔴',RO:'roșu',      EN:'red',    NL:'rood',  SYL:{RO:'ro·șu',       EN:'red',    NL:'rood'}},
+    {emoji:'🔵',RO:'albastru',  EN:'blue',   NL:'blauw', SYL:{RO:'al·bas·tru',  EN:'blue',   NL:'blauw'}},
+    {emoji:'🟢',RO:'verde',     EN:'green',  NL:'groen', SYL:{RO:'ver·de',      EN:'green',  NL:'groen'}},
+    {emoji:'🟡',RO:'galben',    EN:'yellow', NL:'geel',  SYL:{RO:'gal·ben',     EN:'yel·low',NL:'geel'}},
+    {emoji:'🟠',RO:'portocaliu',EN:'orange', NL:'oranje',SYL:{RO:'por·to·ca·liu',EN:'or·ange',NL:'o·ran·je'}},
+    {emoji:'🟣',RO:'mov',       EN:'purple', NL:'paars', SYL:{RO:'mov',         EN:'pur·ple',NL:'paars'}},
+    {emoji:'⚪',RO:'alb',       EN:'white',  NL:'wit',   SYL:{RO:'alb',         EN:'white',  NL:'wit'}},
+    {emoji:'⚫',RO:'negru',     EN:'black',  NL:'zwart', SYL:{RO:'neg·ru',      EN:'black',  NL:'zwart'}},
+  ],
+  body:[
+    {emoji:'👁️',RO:'ochi',  EN:'eye',   NL:'oog',     SYL:{RO:'o·chi',    EN:'eye',    NL:'oog'}},
+    {emoji:'👂',RO:'ureche', EN:'ear',   NL:'oor',     SYL:{RO:'u·re·che', EN:'ear',    NL:'oor'}},
+    {emoji:'👃',RO:'nas',   EN:'nose',  NL:'neus',    SYL:{RO:'nas',      EN:'nose',   NL:'neus'}},
+    {emoji:'👄',RO:'gură',  EN:'mouth', NL:'mond',    SYL:{RO:'gu·ră',    EN:'mouth',  NL:'mond'}},
+    {emoji:'🦷',RO:'dinte', EN:'tooth', NL:'tand',    SYL:{RO:'din·te',   EN:'tooth',  NL:'tand'}},
+    {emoji:'✋',RO:'mână',  EN:'hand',  NL:'hand',    SYL:{RO:'mâ·nă',    EN:'hand',   NL:'hand'}},
+    {emoji:'🦶',RO:'picior',EN:'foot',  NL:'voet',    SYL:{RO:'pi·cior',  EN:'foot',   NL:'voet'}},
+    {emoji:'🙂',RO:'față',  EN:'face',  NL:'gezicht', SYL:{RO:'fa·ță',    EN:'face',   NL:'ge·zicht'}},
+  ],
 };
 
 // ======================== MOUTH EXERCISES ========================
@@ -871,7 +910,8 @@ function renderWordGrid(cat) {
     const word = item[currentLang];
     const card = document.createElement('div');
     card.className = 'word-card';
-    card.innerHTML = `<span class="word-emoji">${item.emoji}</span><span class="word-text">${word}</span><span class="word-listen">${t.listenBtn}</span>`;
+    const syl = item.SYL ? item.SYL[currentLang] : '';
+    card.innerHTML = `<span class="word-emoji">${item.emoji}</span><span class="word-text">${word}</span>${syl && syl !== word ? `<span class="word-syllables">${syl}</span>` : ''}<span class="word-listen">${t.listenBtn}</span>`;
     card.onclick = () => {
       card.classList.add('playing');
       speak(word, LANG_VOICE[currentLang]);
