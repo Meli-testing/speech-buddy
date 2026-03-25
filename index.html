@@ -184,6 +184,35 @@
     }
     .mouth-try-btn:hover { background: var(--primary-dark); }
 
+    /* ===== ANIMAL SOUNDS ===== */
+    .animal-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; padding-bottom: 24px; }
+    body.level-kleintjes .animal-grid { gap: 18px; }
+    .animal-card {
+      background: white; border-radius: 22px; padding: 20px 14px; text-align: center;
+      box-shadow: var(--shadow); cursor: pointer; border: 3px solid #FFF3E0; transition: all 0.2s;
+    }
+    .animal-card:hover { transform: scale(1.04); }
+    .animal-card.active { border-color: var(--secondary); background: #E0F7F4; }
+    .animal-big-emoji { font-size: 3.5rem; display: block; margin-bottom: 8px; }
+    body.level-kleintjes .animal-big-emoji { font-size: 4rem; }
+    .animal-sound-text {
+      font-size: 1.1rem; font-weight: 800; color: var(--secondary-dark);
+      display: block; margin-bottom: 10px; letter-spacing: 0.05em;
+    }
+    .animal-listen-btn {
+      width: 100%; padding: 8px; border: none; border-radius: 12px;
+      background: var(--primary); color: white; font-family: 'Baloo 2', cursive;
+      font-size: 0.85rem; font-weight: 700; cursor: pointer; margin-bottom: 7px; transition: all 0.2s;
+    }
+    .animal-listen-btn:hover { background: var(--primary-dark); }
+    .animal-mic-btn {
+      width: 100%; padding: 8px; border: none; border-radius: 12px;
+      background: var(--secondary); color: white; font-family: 'Baloo 2', cursive;
+      font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: all 0.2s;
+    }
+    .animal-mic-btn:hover { background: var(--secondary-dark); }
+    .animal-mic-btn.recording { background: var(--wrong); animation: pulse 0.8s infinite; }
+
     /* ===== SOUNDS ===== */
     .sound-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
     .sound-btn { background: white; border: 3px solid transparent; border-radius: 18px; padding: 15px 8px; text-align: center; cursor: pointer; transition: all 0.2s; box-shadow: var(--shadow); font-family: 'Baloo 2', cursive; }
@@ -462,6 +491,17 @@
   <div class="mouth-grid"    id="mouth-grid"></div>
 </div>
 
+<!-- ===== SCREEN: ANIMAL SOUNDS ===== -->
+<div id="screen-animals" class="screen">
+  <div class="app-header">
+    <button class="back-btn" onclick="goHome()">← <span class="back-text">Acasă</span></button>
+    <div class="stars-badge">⭐ <span class="star-display">0</span></div>
+  </div>
+  <div class="section-title" id="animals-title">Sunete de animale</div>
+  <div class="section-sub"   id="animals-sub">Apasă și repetă sunetul</div>
+  <div class="animal-grid"   id="animal-grid"></div>
+</div>
+
 <!-- ===== SCREEN: SOUNDS ===== -->
 <div id="screen-sounds" class="screen">
   <div class="app-header">
@@ -550,7 +590,7 @@ const UI = {
     levelNames:{ kleintjes:'Micuții', groeiers:'Cei care cresc', slimmerds:'Cei mari' },
     levelAges:{ kleintjes:'2 – 4 ani', groeiers:'4 – 6 ani', slimmerds:'6 – 7 ani' },
     levelDescs:{ kleintjes:'Exerciții de gură, primele cuvinte, butoane mari', groeiers:'Sunete, cuvinte, cuvinte compuse', slimmerds:'Propoziții, instrucțiuni pas cu pas, sunete dificile' },
-    nav:{ cards:'Carduri cu cuvinte', cardsSub:'Animale, fructe, culori...', mouth:'Exerciții de gură', mouthSub:'Limba și buzele', sounds:'Sunete și litere', soundsSub:'R, S, Ș, L și altele', compound:'Cuvinte compuse', compoundSub:'Pune cuvintele împreună', instructions:'Urmează pașii', instructionsSub:'Instrucțiuni pas cu pas', game:'Joc de potrivire', gameSub:'Potrivește imaginea cu cuvântul' },
+    nav:{ cards:'Carduri cu cuvinte', cardsSub:'Animale, fructe, culori...', mouth:'Exerciții de gură', mouthSub:'Limba și buzele', sounds:'Sunete și litere', soundsSub:'R, S, Ș, L și altele', animals:'Sunete de animale', animalsSub:'Ham ham, miau, oac oac...', compound:'Cuvinte compuse', compoundSub:'Pune cuvintele împreună', instructions:'Urmează pașii', instructionsSub:'Instrucțiuni pas cu pas', game:'Joc de potrivire', gameSub:'Potrivește imaginea cu cuvântul' },
     cardsTitle:'Carduri cu cuvinte', cardsSub:'Apasă pe un card pentru a auzi',
     mouthTitle:'Exerciții de gură', mouthSub:'Fă mișcarea!',
     soundsTitle:'Sunete și litere', soundsSub:'Alege un sunet pentru a exersa',
@@ -570,7 +610,7 @@ const UI = {
     levelNames:{ kleintjes:'Little ones', groeiers:'Growing ones', slimmerds:'Big ones' },
     levelAges:{ kleintjes:'2 – 4 years', groeiers:'4 – 6 years', slimmerds:'6 – 7 years' },
     levelDescs:{ kleintjes:'Mouth exercises, first words, big buttons', groeiers:'Sounds, words, compound words', slimmerds:'Sentences, step-by-step instructions, harder sounds' },
-    nav:{ cards:'Word Cards', cardsSub:'Animals, fruits, colors...', mouth:'Mouth Exercises', mouthSub:'Tongue and lips', sounds:'Sounds & Letters', soundsSub:'R, S, SH, L and more', compound:'Compound Words', compoundSub:'Put words together', instructions:'Follow the Steps', instructionsSub:'Step-by-step instructions', game:'Matching Game', gameSub:'Match the picture to the word' },
+    nav:{ cards:'Word Cards', cardsSub:'Animals, fruits, colors...', mouth:'Mouth Exercises', mouthSub:'Tongue and lips', sounds:'Sounds & Letters', soundsSub:'R, S, SH, L and more', animals:'Animal Sounds', animalsSub:'Woof, meow, ribbit...', compound:'Compound Words', compoundSub:'Put words together', instructions:'Follow the Steps', instructionsSub:'Step-by-step instructions', game:'Matching Game', gameSub:'Match the picture to the word' },
     cardsTitle:'Word Cards', cardsSub:'Tap a card to hear the word',
     mouthTitle:'Mouth Exercises', mouthSub:'Copy the movement!',
     soundsTitle:'Sounds & Letters', soundsSub:'Choose a sound to practise',
@@ -590,7 +630,7 @@ const UI = {
     levelNames:{ kleintjes:'Kleintjes', groeiers:'Groeiers', slimmerds:'Grote kids' },
     levelAges:{ kleintjes:'2 – 4 jaar', groeiers:'4 – 6 jaar', slimmerds:'6 – 7 jaar' },
     levelDescs:{ kleintjes:'Mondoefeningen, eerste woorden, grote knoppen', groeiers:'Klanken, woorden, samengestelde woorden', slimmerds:'Zinnen, opdrachten stap voor stap, moeilijke klanken' },
-    nav:{ cards:'Woordkaarten', cardsSub:'Dieren, fruit, kleuren...', mouth:'Mondoefeningen', mouthSub:'Tong en lippen', sounds:'Klanken & Letters', soundsSub:'R, G, SCH, SL en meer', compound:'Samengestelde woorden', compoundSub:'Maak een nieuw woord', instructions:'Volg de stappen', instructionsSub:'Stap voor stap opdrachten', game:'Raadspel', gameSub:'Koppel het plaatje aan het woord' },
+    nav:{ cards:'Woordkaarten', cardsSub:'Dieren, fruit, kleuren...', mouth:'Mondoefeningen', mouthSub:'Tong en lippen', sounds:'Klanken & Letters', soundsSub:'R, G, SCH, SL en meer', animals:'Dierengeluiden', animalsSub:'Woef, miauw, kwak kwak...', compound:'Samengestelde woorden', compoundSub:'Maak een nieuw woord', instructions:'Volg de stappen', instructionsSub:'Stap voor stap opdrachten', game:'Raadspel', gameSub:'Koppel het plaatje aan het woord' },
     cardsTitle:'Woordkaarten', cardsSub:'Tik op een kaart om het woord te horen',
     mouthTitle:'Mondoefeningen', mouthSub:'Doe de beweging na!',
     soundsTitle:'Klanken & Letters', soundsSub:'Kies een klank om te oefenen',
@@ -679,6 +719,46 @@ const MOUTH_EXERCISES = {
   ],
 };
 
+// ======================== ANIMAL SOUNDS DATA ========================
+const ANIMAL_SOUNDS = {
+  RO: [
+    { emoji:'🐶', name:'Câine',  sound:'ham ham',   listen:'ham ham'   },
+    { emoji:'🐱', name:'Pisică', sound:'miau',       listen:'miau'      },
+    { emoji:'🐮', name:'Vacă',   sound:'muu',        listen:'muu'       },
+    { emoji:'🐸', name:'Broască',sound:'oac oac',    listen:'oac oac'   },
+    { emoji:'🐑', name:'Oaie',   sound:'bee',        listen:'bee'       },
+    { emoji:'🐍', name:'Șarpe',  sound:'sss',        listen:'sss'       },
+    { emoji:'🐝', name:'Albină', sound:'bâzzz',      listen:'bâzzz'     },
+    { emoji:'🦁', name:'Leu',    sound:'raaa',       listen:'raaa'      },
+    { emoji:'🐦', name:'Pasăre', sound:'cip cirip',  listen:'cip cirip' },
+    { emoji:'🐴', name:'Cal',    sound:'iiiha',      listen:'iiiha'     },
+  ],
+  EN: [
+    { emoji:'🐶', name:'Dog',    sound:'woof woof',  listen:'woof woof' },
+    { emoji:'🐱', name:'Cat',    sound:'meow',       listen:'meow'      },
+    { emoji:'🐮', name:'Cow',    sound:'moo',        listen:'moo'       },
+    { emoji:'🐸', name:'Frog',   sound:'ribbit',     listen:'ribbit'    },
+    { emoji:'🐑', name:'Sheep',  sound:'baa',        listen:'baa'       },
+    { emoji:'🐍', name:'Snake',  sound:'hiss',       listen:'hiss'      },
+    { emoji:'🐝', name:'Bee',    sound:'buzz',       listen:'buzz'      },
+    { emoji:'🦁', name:'Lion',   sound:'roar',       listen:'roar'      },
+    { emoji:'🐦', name:'Bird',   sound:'tweet',      listen:'tweet'     },
+    { emoji:'🐴', name:'Horse',  sound:'neigh',      listen:'neigh'     },
+  ],
+  NL: [
+    { emoji:'🐶', name:'Hond',   sound:'woef woef',  listen:'woef woef' },
+    { emoji:'🐱', name:'Kat',    sound:'miauw',      listen:'miauw'     },
+    { emoji:'🐮', name:'Koe',    sound:'moo',        listen:'moo'       },
+    { emoji:'🐸', name:'Kikker', sound:'kwak kwak',  listen:'kwak kwak' },
+    { emoji:'🐑', name:'Schaap', sound:'bèè',        listen:'bèè'       },
+    { emoji:'🐍', name:'Slang',  sound:'sss',        listen:'sss'       },
+    { emoji:'🐝', name:'Bij',    sound:'bzzz',       listen:'bzzz'      },
+    { emoji:'🦁', name:'Leeuw',  sound:'raah',       listen:'raah'      },
+    { emoji:'🐦', name:'Vogel',  sound:'tjilp',      listen:'tjilp'     },
+    { emoji:'🐴', name:'Paard',  sound:'hinnik',     listen:'hinnik'    },
+  ],
+};
+
 // ======================== SOUNDS DATA ========================
 const SOUNDS = {
   RO: [
@@ -761,21 +841,24 @@ const INSTRUCTIONS = {
 const HOME_MENUS = {
   kleintjes: [
     { id:'mouth',        color:'orange', icon:'👄' },
-    { id:'cards',        color:'teal',   icon:'🖼️' },
-    { id:'game',         color:'purple', icon:'🎮' },
+    { id:'animals',      color:'teal',   icon:'🐾' },
+    { id:'cards',        color:'purple', icon:'🖼️' },
+    { id:'game',         color:'blue',   icon:'🎮' },
   ],
   groeiers: [
     { id:'cards',        color:'orange', icon:'🖼️' },
-    { id:'sounds',       color:'teal',   icon:'🔤' },
+    { id:'animals',      color:'teal',   icon:'🐾' },
+    { id:'sounds',       color:'purple', icon:'🔤' },
     { id:'compound',     color:'blue',   icon:'🔗' },
-    { id:'game',         color:'purple', icon:'🎮' },
+    { id:'game',         color:'yellow', icon:'🎮' },
   ],
   slimmerds: [
     { id:'cards',        color:'orange', icon:'🖼️' },
-    { id:'sounds',       color:'teal',   icon:'🔤' },
+    { id:'animals',      color:'teal',   icon:'🐾' },
+    { id:'sounds',       color:'purple', icon:'🔤' },
     { id:'compound',     color:'blue',   icon:'🔗' },
     { id:'instructions', color:'yellow', icon:'📋' },
-    { id:'game',         color:'purple', icon:'🎮' },
+    { id:'game',         color:'orange', icon:'🎮' },
   ],
 };
 
@@ -817,6 +900,7 @@ function updateUI() {
   setText('home-welcome-sub',  t.welcomeSub);
   setText('cards-title',   t.cardsTitle); setText('cards-sub',  t.cardsSub);
   setText('mouth-title',   t.mouthTitle); setText('mouth-sub',  t.mouthSub);
+  setText('animals-title', t.animalsTitle || t.nav.animals); setText('animals-sub', t.animalsSub || t.nav.animalsSub);
   setText('sounds-title',  t.soundsTitle); setText('sounds-sub', t.soundsSub);
   setText('compound-title',t.compoundTitle); setText('compound-sub', t.compoundSub);
   setText('instr-title',   t.instrTitle); setText('instr-sub',  t.instrSub);
@@ -864,6 +948,7 @@ function navTo(id) {
   switch(id) {
     case 'cards':        goToCards();        break;
     case 'mouth':        goToMouth();        break;
+    case 'animals':      goToAnimals();      break;
     case 'sounds':       goToSounds();       break;
     case 'compound':     goToCompound();     break;
     case 'instructions': goToInstructions(); break;
@@ -950,6 +1035,75 @@ function doMouthExercise(i) {
     card.classList.remove('doing');
     showReward(1, 1);
   }, 2200);
+}
+
+// ======================== ANIMAL SOUNDS ========================
+function goToAnimals() {
+  const t = UI[currentLang];
+  const grid = document.getElementById('animal-grid');
+  grid.innerHTML = '';
+  ANIMAL_SOUNDS[currentLang].forEach((animal, i) => {
+    const card = document.createElement('div');
+    card.className = 'animal-card';
+    card.id = 'animal-' + i;
+    const micBtn = currentLevel === 'kleintjes'
+      ? `<button class="animal-mic-btn" id="amic-${i}" onclick="tryAnimalSound(${i},'${animal.sound}')">🎤 ${t.tryBtn||'Încearcă'}</button>`
+      : `<button class="animal-mic-btn" id="amic-${i}" onclick="recordAnimalSound(${i},'${animal.sound}')">🎤 ${t.tryBtn||'Încearcă'}</button>`;
+    card.innerHTML = `
+      <span class="animal-big-emoji">${animal.emoji}</span>
+      <span class="animal-sound-text">${animal.sound}</span>
+      <button class="animal-listen-btn" onclick="speakAnimal('${animal.listen}',${i})">${t.listenBtn||'🔊 Ascultă'}</button>
+      ${micBtn}
+    `;
+    grid.appendChild(card);
+  });
+  showScreen('screen-animals');
+}
+
+function speakAnimal(sound, i) {
+  const card = document.getElementById('animal-' + i);
+  card.classList.add('active');
+  fallbackSpeak(sound, LANG_VOICE[currentLang]);
+  setTimeout(() => card.classList.remove('active'), 1500);
+}
+
+// Kleintjes: always reward the attempt
+function tryAnimalSound(i, sound) {
+  const btn = document.getElementById('amic-' + i);
+  btn.classList.add('recording');
+  fallbackSpeak(sound, LANG_VOICE[currentLang]);
+  setTimeout(() => {
+    btn.classList.remove('recording');
+    addStar();
+    showReward(1, 1);
+  }, 1800);
+}
+
+// Groeiers/Cei mari: actually check with mic
+function recordAnimalSound(i, sound) {
+  const btn = document.getElementById('amic-' + i);
+  const t = UI[currentLang];
+  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+    tryAnimalSound(i, sound); return;
+  }
+  if (isRecording) { isRecording=false; if(window._rec) window._rec.stop(); btn.classList.remove('recording'); btn.textContent=`🎤 ${t.tryBtn||'Încearcă'}`; return; }
+  isRecording = true;
+  btn.classList.add('recording');
+  btn.textContent = t.stopBtn || '⏹ Stop';
+  const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const rec = new Rec();
+  rec.lang = LANG_VOICE[currentLang]; rec.interimResults=false; rec.maxAlternatives=3;
+  window._rec = rec;
+  rec.onresult = (e) => {
+    const results = Array.from(e.results[0]).map(r => r.transcript.toLowerCase().trim());
+    const expected = sound.toLowerCase().replace(/\s+/g,'');
+    const matched = results.some(r => r.replace(/\s+/g,'').includes(expected) || expected.includes(r.replace(/\s+/g,'')));
+    isRecording=false; btn.classList.remove('recording'); btn.textContent=`🎤 ${t.tryBtn||'Încearcă'}`;
+    if (matched) { addStar(); showReward(1,1); }
+    else { speakAnimal(sound, i); } // play the correct sound again gently
+  };
+  rec.onerror = rec.onend = () => { isRecording=false; btn.classList.remove('recording'); btn.textContent=`🎤 ${t.tryBtn||'Încearcă'}`; };
+  rec.start();
 }
 
 // ======================== SOUNDS ========================
