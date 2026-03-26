@@ -16,7 +16,7 @@ export default async function handler(req, res) {
   };
 
   const voiceId = VOICES[lang] || VOICES['en-GB'];
-  const cleanText = text.replace(/!/g, '.').replace(/\?/g, ',').trim();
+  const langCode = lang ? lang.split('-')[0] : 'en';
 
   const response = await fetch(
     `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
@@ -28,12 +28,14 @@ export default async function handler(req, res) {
         'Accept': 'audio/mpeg',
       },
       body: JSON.stringify({
-        text: cleanText,
+        text,
         model_id: 'eleven_turbo_v2_5',
-        language_code: lang.split('-')[0], // 'ro', 'en', 'nl'
+        language_code: langCode,
         voice_settings: {
           stability: 0.55,
           similarity_boost: 0.75,
+          style: 0.15,
+          use_speaker_boost: true,
         },
       }),
     }
@@ -47,5 +49,6 @@ export default async function handler(req, res) {
 
   const audioBuffer = await response.arrayBuffer();
   res.setHeader('Content-Type', 'audio/mpeg');
+  res.setHeader('Cache-Control', 'public, max-age=86400');
   res.send(Buffer.from(audioBuffer));
 }
