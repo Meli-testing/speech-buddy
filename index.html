@@ -1,0 +1,1437 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>SpeechBuddy</title>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #FFF8ED;
+      --primary: #FF7043;
+      --primary-dark: #E64A19;
+      --secondary: #26C6A2;
+      --secondary-dark: #00A382;
+      --accent: #FFD54F;
+      --purple: #BA68C8;
+      --blue: #42A5F5;
+      --card: #FFFFFF;
+      --text: #37474F;
+      --text-light: #78909C;
+      --correct: #66BB6A;
+      --wrong: #EF5350;
+      --shadow: 0 4px 20px rgba(0,0,0,0.09);
+      --shadow-lg: 0 8px 32px rgba(0,0,0,0.15);
+      --radius: 24px;
+      /* level-adaptive sizes */
+      --word-font: 1.1rem;
+      --word-emoji: 2.8rem;
+      --btn-pad: 17px;
+    }
+    body.level-kleintjes {
+      --word-font: 1.4rem;
+      --word-emoji: 3.5rem;
+      --btn-pad: 22px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: 'Baloo 2', cursive;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      max-width: 480px;
+      margin: 0 auto;
+      overflow-x: hidden;
+    }
+    .screen { display: none; min-height: 100vh; padding: 20px; animation: fadeIn 0.3s ease; }
+    .screen.active { display: flex; flex-direction: column; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+
+    /* ===== SHARED: MASCOT SVG ===== */
+    .mascot-svg { filter: drop-shadow(0 8px 20px rgba(255,160,0,0.35)); }
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-14px)} }
+    .floating { animation: float 3s ease-in-out infinite; }
+
+    /* ===== LANGUAGE SCREEN ===== */
+    #screen-lang {
+      background: linear-gradient(150deg, #FFF3E0 0%, #E0F7F4 100%);
+      align-items: center; justify-content: center; gap: 28px; text-align: center;
+    }
+    .lang-title { font-size: 1.85rem; font-weight: 800; color: var(--primary); line-height: 1.2; }
+    .lang-subtitle { font-size: 0.95rem; color: var(--text-light); margin-top: 5px; }
+    .lang-buttons { display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 300px; }
+    .lang-btn {
+      display: flex; align-items: center; gap: 16px; padding: 17px 24px;
+      border-radius: 20px; border: 3px solid transparent; background: white;
+      box-shadow: var(--shadow); font-family: 'Baloo 2', cursive; font-size: 1.2rem;
+      font-weight: 700; cursor: pointer; transition: all 0.2s;
+    }
+    .lang-btn:hover { transform: scale(1.03); box-shadow: var(--shadow-lg); }
+    .lang-btn.ro { border-color: #ce1126; color: #ce1126; }
+    .lang-btn.en { border-color: #012169; color: #012169; }
+    .lang-btn.nl { border-color: #e07b00; color: #e07b00; }
+    .lang-flag { font-size: 2rem; }
+
+    /* ===== LEVEL SCREEN ===== */
+    #screen-level {
+      background: linear-gradient(150deg, #E8F5E9 0%, #FFF8E1 100%);
+      align-items: center; justify-content: center; gap: 24px; text-align: center;
+    }
+    .level-title { font-size: 1.7rem; font-weight: 800; color: var(--text); }
+    .level-subtitle { font-size: 0.95rem; color: var(--text-light); }
+    .level-cards { display: flex; flex-direction: column; gap: 14px; width: 100%; max-width: 340px; }
+    .level-card {
+      display: flex; align-items: center; gap: 16px; padding: 18px 20px;
+      border-radius: 22px; border: 3px solid transparent; background: white;
+      box-shadow: var(--shadow); cursor: pointer; transition: all 0.22s; text-align: left;
+    }
+    .level-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+    .level-card.kleintjes { border-color: #FF7043; }
+    .level-card.groeiers  { border-color: #26C6A2; }
+    .level-card.slimmerds { border-color: #BA68C8; }
+    .level-icon { font-size: 2.4rem; flex-shrink: 0; width: 54px; text-align: center; }
+    .level-info { flex: 1; }
+    .level-name { font-size: 1.15rem; font-weight: 800; }
+    .level-card.kleintjes .level-name { color: #FF7043; }
+    .level-card.groeiers  .level-name { color: #26C6A2; }
+    .level-card.slimmerds .level-name { color: #BA68C8; }
+    .level-age  { font-size: 0.85rem; color: var(--text-light); font-weight: 600; margin-top: 1px; }
+    .level-desc { font-size: 0.82rem; color: var(--text-light); margin-top: 3px; }
+
+    /* ===== HEADER ===== */
+    .app-header { display: flex; align-items: center; justify-content: space-between; padding: 6px 0 16px; flex-shrink: 0; }
+    .header-logo { display: flex; align-items: center; gap: 9px; }
+    .mini-mascot { width: 40px; height: 40px; }
+    .app-name { font-size: 1.2rem; font-weight: 800; color: var(--primary); }
+    .header-right { display: flex; align-items: center; gap: 7px; }
+    .stars-badge { display: flex; align-items: center; gap: 5px; background: var(--accent); padding: 5px 11px; border-radius: 20px; font-weight: 700; font-size: 0.88rem; color: #5D4037; }
+    .level-badge { padding: 5px 11px; border-radius: 20px; font-weight: 700; font-size: 0.78rem; }
+    .level-badge.kleintjes { background: #FFF3E0; color: #FF7043; }
+    .level-badge.groeiers  { background: #E0F7F4; color: #00A382; }
+    .level-badge.slimmerds { background: #F3E5F5; color: #7B1FA2; }
+    .icon-btn { background: white; border: 2px solid #E0E0E0; border-radius: 12px; padding: 5px 10px; font-family: 'Baloo 2', cursive; font-size: 0.85rem; font-weight: 600; cursor: pointer; color: var(--text); transition: all 0.2s; }
+    .icon-btn:hover { border-color: var(--primary); }
+
+    /* ===== HOME ===== */
+    #screen-home { background: var(--bg); }
+    .home-welcome { text-align: center; margin-bottom: 22px; }
+    .home-mascot { width: 90px; height: 90px; margin: 0 auto 10px; }
+    .welcome-text { font-size: 1.45rem; font-weight: 800; }
+    .welcome-sub  { font-size: 0.92rem; color: var(--text-light); margin-top: 4px; }
+    .home-cards { display: flex; flex-direction: column; gap: 13px; }
+    .home-card {
+      display: flex; align-items: center; gap: 15px; padding: var(--btn-pad) 20px;
+      background: white; border-radius: var(--radius); box-shadow: var(--shadow);
+      cursor: pointer; transition: all 0.2s; border: 3px solid transparent;
+    }
+    .home-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+    .home-card.orange { border-color: #FF7043; }
+    .home-card.teal   { border-color: #26C6A2; }
+    .home-card.purple { border-color: #BA68C8; }
+    .home-card.blue   { border-color: #42A5F5; }
+    .home-card.yellow { border-color: #FFB300; }
+    .card-icon { width: 58px; height: 58px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; flex-shrink: 0; }
+    .card-icon.orange { background: #FFF3E0; }
+    .card-icon.teal   { background: #E0F7F4; }
+    .card-icon.purple { background: #F3E5F5; }
+    .card-icon.blue   { background: #E3F2FD; }
+    .card-icon.yellow { background: #FFF8E1; }
+    .card-info { flex: 1; }
+    .card-title { font-size: 1.1rem; font-weight: 800; color: var(--text); }
+    .card-desc  { font-size: 0.85rem; color: var(--text-light); margin-top: 2px; }
+    .card-arrow { font-size: 1.3rem; color: var(--text-light); }
+    /* Kleintjes: bigger home cards */
+    body.level-kleintjes .card-title { font-size: 1.3rem; }
+    body.level-kleintjes .card-icon  { width: 68px; height: 68px; font-size: 2.1rem; }
+
+    /* ===== BACK BTN ===== */
+    .back-btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 15px; background: white; border: none; border-radius: 13px; font-family: 'Baloo 2', cursive; font-size: 0.92rem; font-weight: 700; cursor: pointer; color: var(--text); box-shadow: var(--shadow); transition: all 0.2s; }
+    .back-btn:hover { transform: translateX(-3px); }
+    .section-title { font-size: 1.4rem; font-weight: 800; color: var(--text); margin-bottom: 3px; }
+    .section-sub   { font-size: 0.86rem; color: var(--text-light); margin-bottom: 16px; }
+
+    /* ===== WORD CARDS ===== */
+    .category-tabs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 16px; scrollbar-width: none; }
+    .category-tabs::-webkit-scrollbar { display: none; }
+    .cat-tab { white-space: nowrap; padding: 7px 16px; border-radius: 30px; border: 2px solid #E0E0E0; background: white; font-family: 'Baloo 2', cursive; font-size: 0.88rem; font-weight: 700; cursor: pointer; transition: all 0.2s; color: var(--text-light); flex-shrink: 0; }
+    .cat-tab.active { background: var(--primary); color: white; border-color: var(--primary); }
+    .word-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding-bottom: 24px; }
+    body.level-kleintjes .word-grid { grid-template-columns: 1fr 1fr; gap: 14px; }
+    .word-card { background: white; border-radius: 20px; padding: 18px 12px; text-align: center; box-shadow: var(--shadow); cursor: pointer; transition: all 0.2s; border: 3px solid transparent; }
+    .word-card:hover { transform: scale(1.03); }
+    .word-card.playing { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(255,213,79,0.3); }
+    .word-emoji   { font-size: var(--word-emoji); display: block; margin-bottom: 9px; }
+    .word-text    { font-size: var(--word-font); font-weight: 700; color: var(--text); display: block; }
+    .word-listen  { margin-top: 8px; display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; background: #FFF3E0; border-radius: 20px; font-size: 0.76rem; font-weight: 600; color: var(--primary); }
+    .word-syllables { margin-top: 5px; font-size: 0.78rem; color: var(--secondary-dark); font-weight: 700; letter-spacing: 0.03em; display: block; }
+
+    /* ===== MONDMOTORIEK (kleintjes only) ===== */
+    .mouth-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding-bottom: 24px; }
+    .mouth-card {
+      background: white; border-radius: 22px; padding: 22px 14px; text-align: center;
+      box-shadow: var(--shadow); cursor: pointer; border: 3px solid #FFF3E0; transition: all 0.2s;
+    }
+    .mouth-card:hover { transform: scale(1.04); border-color: var(--primary); }
+    .mouth-card.doing { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(255,213,79,0.3); animation: wiggle 0.4s ease; }
+    @keyframes wiggle { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
+    .mouth-big-emoji { font-size: 3.2rem; display: block; margin-bottom: 10px; }
+    .mouth-name { font-size: 1rem; font-weight: 800; color: var(--text); display: block; }
+    .mouth-tip  { font-size: 0.8rem; color: var(--text-light); margin-top: 5px; display: block; }
+    .mouth-try-btn {
+      margin-top: 11px; width: 100%; padding: 9px; border: none; border-radius: 14px;
+      background: var(--primary); color: white; font-family: 'Baloo 2', cursive;
+      font-size: 0.88rem; font-weight: 700; cursor: pointer; transition: all 0.2s;
+    }
+    .mouth-try-btn:hover { background: var(--primary-dark); }
+
+    /* ===== ANIMAL SOUNDS ===== */
+    .animal-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; padding-bottom: 24px; }
+    body.level-kleintjes .animal-grid { gap: 18px; }
+    .animal-card {
+      background: white; border-radius: 22px; padding: 20px 14px; text-align: center;
+      box-shadow: var(--shadow); cursor: pointer; border: 3px solid #FFF3E0; transition: all 0.2s;
+    }
+    .animal-card:hover { transform: scale(1.04); }
+    .animal-card.active { border-color: var(--secondary); background: #E0F7F4; }
+    .animal-big-emoji { font-size: 3.5rem; display: block; margin-bottom: 8px; }
+    body.level-kleintjes .animal-big-emoji { font-size: 4rem; }
+    .animal-sound-text {
+      font-size: 1.1rem; font-weight: 800; color: var(--secondary-dark);
+      display: block; margin-bottom: 10px; letter-spacing: 0.05em;
+    }
+    .animal-listen-btn {
+      width: 100%; padding: 8px; border: none; border-radius: 12px;
+      background: var(--primary); color: white; font-family: 'Baloo 2', cursive;
+      font-size: 0.85rem; font-weight: 700; cursor: pointer; margin-bottom: 7px; transition: all 0.2s;
+    }
+    .animal-listen-btn:hover { background: var(--primary-dark); }
+    .animal-mic-btn {
+      width: 100%; padding: 8px; border: none; border-radius: 12px;
+      background: var(--secondary); color: white; font-family: 'Baloo 2', cursive;
+      font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: all 0.2s;
+    }
+    .animal-mic-btn:hover { background: var(--secondary-dark); }
+    .animal-mic-btn.recording { background: var(--wrong); animation: pulse 0.8s infinite; }
+
+    /* ===== SOUNDS ===== */
+    .sound-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+    .sound-btn { background: white; border: 3px solid transparent; border-radius: 18px; padding: 15px 8px; text-align: center; cursor: pointer; transition: all 0.2s; box-shadow: var(--shadow); font-family: 'Baloo 2', cursive; }
+    .sound-btn:hover { transform: scale(1.05); }
+    .sound-btn.active { border-color: var(--secondary); background: #E0F7F4; }
+    .sound-letter { font-size: 2rem; font-weight: 800; color: var(--secondary-dark); display: block; }
+    .sound-detail { background: white; border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); display: none; animation: fadeIn 0.3s ease; margin-bottom: 22px; }
+    .sound-detail.visible { display: block; }
+    .sound-tip { display: flex; align-items: flex-start; gap: 11px; background: #E8F5E9; border-radius: 16px; padding: 13px; margin-bottom: 15px; }
+    .tip-emoji { font-size: 1.8rem; flex-shrink: 0; }
+    .tip-text  { font-size: 0.91rem; font-weight: 600; color: #2E7D32; line-height: 1.45; }
+    .sound-words { display: flex; flex-direction: column; gap: 9px; }
+    .sound-word-item { display: flex; align-items: center; gap: 9px; padding: 10px 12px; background: #F5F5F5; border-radius: 14px; }
+    .sw-emoji { font-size: 1.6rem; flex-shrink: 0; }
+    .sw-word  { flex: 1; font-size: 1.02rem; font-weight: 700; }
+    .sw-btn   { padding: 6px 12px; border: none; border-radius: 10px; font-family: 'Baloo 2', cursive; font-size: 0.78rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+    .sw-listen { background: var(--primary); color: white; }
+    .sw-listen:hover { background: var(--primary-dark); }
+    .sw-try   { background: var(--secondary); color: white; }
+    .sw-try:hover { background: var(--secondary-dark); }
+    .sw-try.recording { background: var(--wrong); animation: pulse 0.8s infinite; }
+    @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.07)} }
+
+    /* ===== COMPOUND WORDS (Groeiers/Slimmerds) ===== */
+    .compound-intro { background: white; border-radius: 20px; padding: 18px; box-shadow: var(--shadow); margin-bottom: 16px; }
+    .compound-example { display: flex; align-items: center; gap: 10px; font-size: 1.15rem; font-weight: 700; flex-wrap: wrap; justify-content: center; margin-top: 10px; }
+    .compound-part { padding: 8px 14px; border-radius: 12px; background: #E0F7F4; color: var(--secondary-dark); }
+    .compound-plus { color: var(--text-light); }
+    .compound-result { padding: 8px 14px; border-radius: 12px; background: #FFF3E0; color: var(--primary); }
+    .compound-exercise { display: flex; flex-direction: column; gap: 12px; padding-bottom: 24px; }
+    .compound-item { background: white; border-radius: 18px; padding: 16px; box-shadow: var(--shadow); }
+    .compound-question { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 1.05rem; font-weight: 700; }
+    .compound-q-word { padding: 7px 13px; background: #E0F7F4; border-radius: 12px; color: var(--secondary-dark); }
+    .compound-q-blank { flex: 1; border-bottom: 3px dashed var(--text-light); min-width: 80px; }
+    .compound-options { display: flex; gap: 8px; flex-wrap: wrap; }
+    .compound-opt {
+      padding: 8px 14px; border-radius: 12px; border: 2px solid #E0E0E0; background: white;
+      font-family: 'Baloo 2', cursive; font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: all 0.2s;
+    }
+    .compound-opt:hover { border-color: var(--secondary); }
+    .compound-opt.correct { background: #E8F5E9; border-color: var(--correct); color: #2E7D32; }
+    .compound-opt.wrong   { background: #FFEBEE; border-color: var(--wrong);   color: #C62828; }
+
+    /* ===== INSTRUCTIONS (Slimmerds) ===== */
+    .instruction-card { background: white; border-radius: 20px; padding: 20px; box-shadow: var(--shadow); margin-bottom: 14px; }
+    .instruction-title { font-size: 1.1rem; font-weight: 800; color: var(--text); margin-bottom: 12px; }
+    .instruction-steps { display: flex; flex-direction: column; gap: 9px; }
+    .instr-step { display: flex; align-items: flex-start; gap: 11px; padding: 11px 13px; border-radius: 14px; background: #F5F5F5; transition: all 0.2s; }
+    .instr-step.done { background: #E8F5E9; }
+    .step-num { width: 28px; height: 28px; border-radius: 50%; background: var(--primary); color: white; font-weight: 800; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .instr-step.done .step-num { background: var(--correct); }
+    .step-text { flex: 1; font-size: 0.93rem; font-weight: 600; line-height: 1.4; padding-top: 3px; }
+    .step-check { font-size: 1.2rem; opacity: 0; transition: all 0.2s; }
+    .instr-step.done .step-check { opacity: 1; }
+    .instr-btn { width: 100%; padding: 13px; border: none; border-radius: 16px; background: var(--purple); color: white; font-family: 'Baloo 2', cursive; font-size: 1rem; font-weight: 800; cursor: pointer; transition: all 0.2s; margin-top: 14px; }
+    .instr-btn:hover { filter: brightness(1.1); }
+
+    /* ===== MATCHING GAME ===== */
+    .game-progress { display: flex; gap: 7px; justify-content: center; flex-wrap: wrap; margin-bottom: 16px; }
+    .progress-dot { width: 11px; height: 11px; border-radius: 50%; background: #E0E0E0; transition: background 0.3s; }
+    .progress-dot.done    { background: var(--correct); }
+    .progress-dot.current { background: var(--accent); }
+    .game-question { background: white; border-radius: var(--radius); padding: 28px; text-align: center; box-shadow: var(--shadow); margin-bottom: 16px; }
+    .game-emoji  { font-size: 4.2rem; display: block; margin-bottom: 8px; }
+    .game-prompt { font-size: 1rem; color: var(--text-light); font-weight: 600; }
+    .game-options { display: grid; gap: 10px; }
+    .game-options.opts-2 { grid-template-columns: 1fr 1fr; }
+    .game-options.opts-4 { grid-template-columns: 1fr 1fr; }
+    .game-option { padding: 16px; background: white; border: 3px solid #E0E0E0; border-radius: 17px; font-family: 'Baloo 2', cursive; font-size: var(--word-font); font-weight: 700; cursor: pointer; transition: all 0.2s; text-align: center; color: var(--text); }
+    .game-option:hover  { transform: scale(1.03); border-color: var(--accent); }
+    .game-option.correct { background: #E8F5E9; border-color: var(--correct); color: #2E7D32; }
+    .game-option.wrong   { background: #FFEBEE; border-color: var(--wrong); color: #C62828; }
+
+    /* ===== REWARD ===== */
+    .reward-overlay { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.6); align-items: center; justify-content: center; z-index: 1000; display: none; animation: fadeIn 0.3s ease; }
+    .reward-overlay.show { display: flex; }
+    .reward-card { background: white; border-radius: 32px; padding: 36px 28px; text-align: center; max-width: 320px; width: 90%; animation: popIn 0.4s cubic-bezier(0.34,1.56,0.64,1); }
+    @keyframes popIn { from{transform:scale(0.7);opacity:0} to{transform:scale(1);opacity:1} }
+    .reward-stars { font-size: 2.7rem; margin-bottom: 7px; display: block; }
+    .reward-title { font-size: 1.85rem; font-weight: 800; color: var(--primary); }
+    .reward-msg   { font-size: 0.98rem; color: var(--text-light); margin: 11px 0 20px; min-height: 46px; line-height: 1.5; }
+    .reward-continue { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 17px; font-family: 'Baloo 2', cursive; font-size: 1.05rem; font-weight: 800; cursor: pointer; transition: all 0.2s; }
+    .reward-continue:hover { background: var(--primary-dark); transform: scale(1.02); }
+    .loading-dots { display: inline-flex; gap: 5px; }
+    .loading-dots span { width: 8px; height: 8px; background: var(--text-light); border-radius: 50%; animation: dotBounce 0.6s ease-in-out infinite; }
+    .loading-dots span:nth-child(2) { animation-delay: 0.12s; }
+    .loading-dots span:nth-child(3) { animation-delay: 0.24s; }
+    @keyframes dotBounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-8px)} }
+
+    /* ===== CONFETTI ===== */
+    .confetti-container { position: fixed; top:0; left:0; right:0; bottom:0; pointer-events:none; z-index:999; display:none; }
+    .confetti-container.show { display: block; }
+    .confetto { position: absolute; top: -12px; border-radius: 2px; animation: fall linear forwards; }
+    @keyframes fall { to { transform: translateY(110vh) rotate(720deg); opacity: 0; } }
+  </style>
+</head>
+<body>
+
+<!-- ===== SVG MASCOT (reusable) ===== -->
+<template id="mascot-tpl">
+  <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="mascot-svg">
+    <defs>
+      <radialGradient id="bG" cx="38%" cy="32%">
+        <stop offset="0%" stop-color="#FFE082"/>
+        <stop offset="100%" stop-color="#FF8F00"/>
+      </radialGradient>
+    </defs>
+    <ellipse cx="17" cy="45" rx="13" ry="15" fill="url(#bG)"/>
+    <ellipse cx="83" cy="45" rx="13" ry="15" fill="url(#bG)"/>
+    <ellipse cx="17" cy="45" rx="7" ry="9" fill="#FFAB40" opacity="0.6"/>
+    <ellipse cx="83" cy="45" rx="7" ry="9" fill="#FFAB40" opacity="0.6"/>
+    <circle cx="50" cy="58" r="37" fill="url(#bG)"/>
+    <ellipse cx="36" cy="52" rx="10" ry="11" fill="white"/>
+    <ellipse cx="64" cy="52" rx="10" ry="11" fill="white"/>
+    <circle cx="38" cy="54" r="6.5" fill="#263238"/>
+    <circle cx="66" cy="54" r="6.5" fill="#263238"/>
+    <circle cx="40" cy="51" r="2.5" fill="white"/>
+    <circle cx="68" cy="51" r="2.5" fill="white"/>
+    <circle cx="24" cy="66" r="8" fill="#FF8A65" opacity="0.38"/>
+    <circle cx="76" cy="66" r="8" fill="#FF8A65" opacity="0.38"/>
+    <path d="M36 67 Q50 80 64 67" stroke="#E65100" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  </svg>
+</template>
+
+<!-- ===== SCREEN: LANGUAGE ===== -->
+<div id="screen-lang" class="screen active">
+  <div class="floating" style="margin-top:10px">
+    <svg width="130" height="130" viewBox="0 0 100 100" class="mascot-svg">
+      <defs><radialGradient id="lg1" cx="38%" cy="32%"><stop offset="0%" stop-color="#FFE082"/><stop offset="100%" stop-color="#FF8F00"/></radialGradient></defs>
+      <ellipse cx="17" cy="45" rx="13" ry="15" fill="url(#lg1)"/>
+      <ellipse cx="83" cy="45" rx="13" ry="15" fill="url(#lg1)"/>
+      <ellipse cx="17" cy="45" rx="7" ry="9" fill="#FFAB40" opacity="0.6"/>
+      <ellipse cx="83" cy="45" rx="7" ry="9" fill="#FFAB40" opacity="0.6"/>
+      <circle cx="50" cy="58" r="37" fill="url(#lg1)"/>
+      <ellipse cx="36" cy="52" rx="10" ry="11" fill="white"/>
+      <ellipse cx="64" cy="52" rx="10" ry="11" fill="white"/>
+      <circle cx="38" cy="54" r="6.5" fill="#263238"/>
+      <circle cx="66" cy="54" r="6.5" fill="#263238"/>
+      <circle cx="40" cy="51" r="2.5" fill="white"/>
+      <circle cx="68" cy="51" r="2.5" fill="white"/>
+      <circle cx="24" cy="66" r="8" fill="#FF8A65" opacity="0.38"/>
+      <circle cx="76" cy="66" r="8" fill="#FF8A65" opacity="0.38"/>
+      <path d="M36 67 Q50 80 64 67" stroke="#E65100" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+      <polygon points="50,16 52.4,23.2 60,23.2 54,27.6 56.2,35 50,30.8 43.8,35 46,27.6 40,23.2 47.6,23.2" fill="#FFD54F" stroke="#FFA000" stroke-width="0.5"/>
+    </svg>
+  </div>
+  <div>
+    <div class="lang-title">Hai să vorbim! 🎉<br><span style="color:#26C6A2">Let's talk!</span><br><span style="color:#e07b00">Laten we praten!</span></div>
+    <div class="lang-subtitle">Alege limba · Choose language · Kies taal</div>
+  </div>
+  <div class="lang-buttons">
+    <button class="lang-btn ro" onclick="selectLanguage('RO')"><span class="lang-flag">🇷🇴</span> Română</button>
+    <button class="lang-btn en" onclick="selectLanguage('EN')"><span class="lang-flag">🇬🇧</span> English</button>
+    <button class="lang-btn nl" onclick="selectLanguage('NL')"><span class="lang-flag">🇧🇪</span> Nederlands</button>
+  </div>
+</div>
+
+<!-- ===== SCREEN: LEVEL ===== -->
+<div id="screen-level" class="screen">
+  <div class="floating" style="margin-top:10px">
+    <svg width="100" height="100" viewBox="0 0 100 100" class="mascot-svg">
+      <defs><radialGradient id="lv1" cx="38%" cy="32%"><stop offset="0%" stop-color="#FFE082"/><stop offset="100%" stop-color="#FF8F00"/></radialGradient></defs>
+      <ellipse cx="17" cy="45" rx="13" ry="15" fill="url(#lv1)"/>
+      <ellipse cx="83" cy="45" rx="13" ry="15" fill="url(#lv1)"/>
+      <circle cx="50" cy="58" r="37" fill="url(#lv1)"/>
+      <ellipse cx="36" cy="52" rx="10" ry="11" fill="white"/>
+      <ellipse cx="64" cy="52" rx="10" ry="11" fill="white"/>
+      <circle cx="38" cy="54" r="6.5" fill="#263238"/>
+      <circle cx="66" cy="54" r="6.5" fill="#263238"/>
+      <circle cx="40" cy="51" r="2.5" fill="white"/>
+      <circle cx="68" cy="51" r="2.5" fill="white"/>
+      <path d="M36 67 Q50 80 64 67" stroke="#E65100" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+    </svg>
+  </div>
+  <button class="back-btn" onclick="showScreen('screen-lang')" style="align-self:flex-start;margin-bottom:8px">← <span id="back-to-lang">Terug</span></button>
+  <div>
+    <div class="level-title" id="level-screen-title">Wie gaat er oefenen?</div>
+    <div class="level-subtitle" id="level-screen-sub">Kies het juiste niveau</div>
+  </div>
+  <div class="level-cards">
+    <div class="level-card kleintjes" onclick="selectLevel('kleintjes')">
+      <div class="level-icon">🌟</div>
+      <div class="level-info">
+        <div class="level-name" id="lv-name-k">Kleintjes</div>
+        <div class="level-age"  id="lv-age-k">2 – 4 jaar</div>
+        <div class="level-desc" id="lv-desc-k">Mondoefeningen, eerste woorden, grote knoppen</div>
+      </div>
+    </div>
+    <div class="level-card groeiers" onclick="selectLevel('groeiers')">
+      <div class="level-icon">🚀</div>
+      <div class="level-info">
+        <div class="level-name" id="lv-name-g">Groeiers</div>
+        <div class="level-age"  id="lv-age-g">4 – 6 jaar</div>
+        <div class="level-desc" id="lv-desc-g">Klanken, woorden, samengestelde woorden</div>
+      </div>
+    </div>
+    <div class="level-card slimmerds" onclick="selectLevel('slimmerds')">
+      <div class="level-icon">🎓</div>
+      <div class="level-info">
+        <div class="level-name" id="lv-name-s">Slimmerds</div>
+        <div class="level-age"  id="lv-age-s">6 – 7 jaar</div>
+        <div class="level-desc" id="lv-desc-s">Zinnen, opdrachten stap voor stap, moeilijke klanken</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SCREEN: HOME ===== -->
+<div id="screen-home" class="screen">
+  <div class="app-header">
+    <div class="header-logo">
+      <svg class="mini-mascot" viewBox="0 0 100 100">
+        <defs><radialGradient id="hd1" cx="38%" cy="32%"><stop offset="0%" stop-color="#FFE082"/><stop offset="100%" stop-color="#FF8F00"/></radialGradient></defs>
+        <ellipse cx="17" cy="45" rx="13" ry="15" fill="url(#hd1)"/>
+        <ellipse cx="83" cy="45" rx="13" ry="15" fill="url(#hd1)"/>
+        <circle cx="50" cy="58" r="37" fill="url(#hd1)"/>
+        <ellipse cx="36" cy="52" rx="10" ry="11" fill="white"/>
+        <ellipse cx="64" cy="52" rx="10" ry="11" fill="white"/>
+        <circle cx="38" cy="54" r="6.5" fill="#263238"/>
+        <circle cx="66" cy="54" r="6.5" fill="#263238"/>
+        <circle cx="40" cy="51" r="2.5" fill="white"/>
+        <circle cx="68" cy="51" r="2.5" fill="white"/>
+        <path d="M36 67 Q50 80 64 67" stroke="#E65100" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+      </svg>
+      <span class="app-name">SpeechBuddy</span>
+    </div>
+    <div class="header-right">
+      <div class="stars-badge">⭐ <span class="star-display">0</span></div>
+      <div class="level-badge" id="home-level-badge">🌟</div>
+      <button class="icon-btn" onclick="goToLevel()" title="Niveau wisselen">⚙️</button>
+    </div>
+  </div>
+  <div class="home-welcome">
+    <svg class="home-mascot floating" viewBox="0 0 100 100" style="width:90px;height:90px;display:block;margin:0 auto 10px">
+      <defs><radialGradient id="hm1" cx="38%" cy="32%"><stop offset="0%" stop-color="#FFE082"/><stop offset="100%" stop-color="#FF8F00"/></radialGradient></defs>
+      <ellipse cx="17" cy="45" rx="13" ry="15" fill="url(#hm1)"/>
+      <ellipse cx="83" cy="45" rx="13" ry="15" fill="url(#hm1)"/>
+      <ellipse cx="17" cy="45" rx="7" ry="9" fill="#FFAB40" opacity="0.6"/>
+      <ellipse cx="83" cy="45" rx="7" ry="9" fill="#FFAB40" opacity="0.6"/>
+      <circle cx="50" cy="58" r="37" fill="url(#hm1)"/>
+      <ellipse cx="36" cy="52" rx="10" ry="11" fill="white"/>
+      <ellipse cx="64" cy="52" rx="10" ry="11" fill="white"/>
+      <circle cx="38" cy="54" r="6.5" fill="#263238"/>
+      <circle cx="66" cy="54" r="6.5" fill="#263238"/>
+      <circle cx="40" cy="51" r="2.5" fill="white"/>
+      <circle cx="68" cy="51" r="2.5" fill="white"/>
+      <circle cx="24" cy="66" r="8" fill="#FF8A65" opacity="0.38"/>
+      <circle cx="76" cy="66" r="8" fill="#FF8A65" opacity="0.38"/>
+      <path d="M36 67 Q50 80 64 67" stroke="#E65100" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+    </svg>
+    <div class="welcome-text" id="home-welcome-text">Bună ziua! 👋</div>
+    <div class="welcome-sub"  id="home-welcome-sub">Ce facem azi?</div>
+  </div>
+  <div class="home-cards" id="home-cards-container"></div>
+</div>
+
+<!-- ===== SCREEN: WORD CARDS ===== -->
+<div id="screen-cards" class="screen">
+  <div class="app-header">
+    <button class="back-btn" onclick="goHome()">← <span class="back-text">Acasă</span></button>
+    <div class="stars-badge">⭐ <span class="star-display">0</span></div>
+  </div>
+  <div class="section-title" id="cards-title">Carduri</div>
+  <div class="section-sub"   id="cards-sub">Apasă pentru a auzi</div>
+  <div class="category-tabs" id="cat-tabs"></div>
+  <div class="word-grid"     id="word-grid"></div>
+</div>
+
+<!-- ===== SCREEN: MONDMOTORIEK ===== -->
+<div id="screen-mouth" class="screen">
+  <div class="app-header">
+    <button class="back-btn" onclick="goHome()">← <span class="back-text">Thuis</span></button>
+    <div class="stars-badge">⭐ <span class="star-display">0</span></div>
+  </div>
+  <div class="section-title" id="mouth-title">Mondoefeningen</div>
+  <div class="section-sub"   id="mouth-sub">Doe de oefening na!</div>
+  <div class="mouth-grid"    id="mouth-grid"></div>
+</div>
+
+<!-- ===== SCREEN: ANIMAL SOUNDS ===== -->
+<div id="screen-animals" class="screen">
+  <div class="app-header">
+    <button class="back-btn" onclick="goHome()">← <span class="back-text">Acasă</span></button>
+    <div class="stars-badge">⭐ <span class="star-display">0</span></div>
+  </div>
+  <div class="section-title" id="animals-title">Sunete de animale</div>
+  <div class="section-sub"   id="animals-sub">Apasă și repetă sunetul</div>
+  <div class="animal-grid"   id="animal-grid"></div>
+</div>
+
+<!-- ===== SCREEN: SOUNDS ===== -->
+<div id="screen-sounds" class="screen">
+  <div class="app-header">
+    <button class="back-btn" onclick="goHome()">← <span class="back-text">Acasă</span></button>
+    <div class="stars-badge">⭐ <span class="star-display">0</span></div>
+  </div>
+  <div class="section-title" id="sounds-title">Sunete</div>
+  <div class="section-sub"   id="sounds-sub">Alege un sunet</div>
+  <div class="sound-grid"    id="sound-grid"></div>
+  <div class="sound-detail"  id="sound-detail"></div>
+</div>
+
+<!-- ===== SCREEN: COMPOUND WORDS ===== -->
+<div id="screen-compound" class="screen">
+  <div class="app-header">
+    <button class="back-btn" onclick="goHome()">← <span class="back-text">Home</span></button>
+    <div class="stars-badge">⭐ <span class="star-display">0</span></div>
+  </div>
+  <div class="section-title" id="compound-title">Samengestelde woorden</div>
+  <div class="section-sub"   id="compound-sub">Maak een nieuw woord!</div>
+  <div class="compound-intro">
+    <div style="font-size:0.9rem;color:var(--text-light);font-weight:600" id="compound-intro-text">Twee woorden samen = één nieuw woord!</div>
+    <div class="compound-example">
+      <span class="compound-part" id="ex-part1">tafel</span>
+      <span class="compound-plus">+</span>
+      <span class="compound-part" id="ex-part2">poot</span>
+      <span class="compound-plus">=</span>
+      <span class="compound-result" id="ex-result">tafelpoot</span>
+    </div>
+  </div>
+  <div class="compound-exercise" id="compound-exercise"></div>
+</div>
+
+<!-- ===== SCREEN: INSTRUCTIONS ===== -->
+<div id="screen-instructions" class="screen">
+  <div class="app-header">
+    <button class="back-btn" onclick="goHome()">← <span class="back-text">Home</span></button>
+    <div class="stars-badge">⭐ <span class="star-display">0</span></div>
+  </div>
+  <div class="section-title" id="instr-title">Volg de stappen</div>
+  <div class="section-sub"   id="instr-sub">Doe elke stap in volgorde</div>
+  <div id="instructions-container"></div>
+</div>
+
+<!-- ===== SCREEN: GAME ===== -->
+<div id="screen-game" class="screen">
+  <div class="app-header">
+    <button class="back-btn" onclick="goHome()">← <span class="back-text">Acasă</span></button>
+    <div class="stars-badge">⭐ <span class="star-display">0</span></div>
+  </div>
+  <div class="section-title" id="game-title">Joc</div>
+  <div class="section-sub"   id="game-sub">Alege răspunsul corect!</div>
+  <div class="game-progress"  id="game-progress"></div>
+  <div class="game-question"  id="game-question"></div>
+  <div class="game-options"   id="game-options"></div>
+</div>
+
+<!-- ===== REWARD ===== -->
+<div class="reward-overlay" id="reward-overlay">
+  <div class="reward-card">
+    <span class="reward-stars"    id="reward-stars">🌟🌟🌟</span>
+    <div  class="reward-title"    id="reward-title">Bravo!</div>
+    <div  class="reward-msg"      id="reward-msg"><div class="loading-dots"><span></span><span></span><span></span></div></div>
+    <button class="reward-continue" id="reward-btn" onclick="closeReward()">Continuă! →</button>
+  </div>
+</div>
+<div class="confetti-container" id="confetti"></div>
+
+<!-- ===================================== SCRIPT ===================================== -->
+<script>
+// ======================== STATE ========================
+let currentLang  = 'RO';
+let currentLevel = 'groeiers'; // kleintjes | groeiers | slimmerds
+let stars = 0;
+let isRecording = false;
+let gameItems = [], gameIndex = 0, gameScore = 0;
+
+const LANG_VOICE = { RO:'ro-RO', EN:'en-GB', NL:'nl-NL' };
+
+// ======================== UI STRINGS ========================
+const UI = {
+  RO: {
+    welcome:'Bună ziua! 👋', welcomeSub:'Ce facem azi?',
+    backHome:'Acasă', continueBtn:'Continuă! →',
+    levelTitle:'Cine exersează?', levelSub:'Alege nivelul potrivit',
+    levelNames:{ kleintjes:'Micuții', groeiers:'Cei care cresc', slimmerds:'Cei mari' },
+    levelAges:{ kleintjes:'2 – 4 ani', groeiers:'4 – 6 ani', slimmerds:'6 – 7 ani' },
+    levelDescs:{ kleintjes:'Exerciții de gură, primele cuvinte, butoane mari', groeiers:'Sunete, cuvinte, cuvinte compuse', slimmerds:'Propoziții, instrucțiuni pas cu pas, sunete dificile' },
+    nav:{ cards:'Carduri cu cuvinte', cardsSub:'Animale, fructe, culori...', mouth:'Exerciții de gură', mouthSub:'Limba și buzele', sounds:'Sunete și litere', soundsSub:'R, S, Ș, L și altele', animals:'Sunete de animale', animalsSub:'Ham ham, miau, oac oac...', compound:'Cuvinte compuse', compoundSub:'Pune cuvintele împreună', instructions:'Urmează pașii', instructionsSub:'Instrucțiuni pas cu pas', game:'Joc de potrivire', gameSub:'Potrivește imaginea cu cuvântul' },
+    cardsTitle:'Carduri cu cuvinte', cardsSub:'Apasă pe un card pentru a auzi',
+    mouthTitle:'Exerciții de gură', mouthSub:'Fă mișcarea!',
+    soundsTitle:'Sunete și litere', soundsSub:'Alege un sunet pentru a exersa',
+    compoundTitle:'Cuvinte compuse', compoundSub:'Fă un cuvânt nou!',
+    compoundIntro:'Două cuvinte împreună = un cuvânt nou!',
+    instrTitle:'Urmează pașii', instrSub:'Fă fiecare pas în ordine',
+    gameTitle:'Joc de potrivire', gameSub:'Alege cuvântul corect!',
+    gamePrompt:'Ce este asta?', listenBtn:'🔊 Ascultă', tryBtn:'🎤 Încearcă', stopBtn:'⏹ Stop',
+    rewardTitle:'Bravo! 🎉',
+    cats:{ animals:'🐾 Animale', fruits:'🍎 Fructe', colors:'🎨 Culori', body:'🫀 Corpul meu' },
+    aiPrompt:(s,t)=>`Ești un asistent de logopedie pentru copii mici (2-7 ani). Copilul a obținut ${s} din ${t} corecte. Scrie o încurajare scurtă, caldă, în română. Maxim 2 propoziții scurte. Fără formatare.`
+  },
+  EN: {
+    welcome:'Hello! 👋', welcomeSub:'What shall we do today?',
+    backHome:'Home', continueBtn:'Continue! →',
+    levelTitle:'Who is practising?', levelSub:'Choose the right level',
+    levelNames:{ kleintjes:'Little ones', groeiers:'Growing ones', slimmerds:'Big ones' },
+    levelAges:{ kleintjes:'2 – 4 years', groeiers:'4 – 6 years', slimmerds:'6 – 7 years' },
+    levelDescs:{ kleintjes:'Mouth exercises, first words, big buttons', groeiers:'Sounds, words, compound words', slimmerds:'Sentences, step-by-step instructions, harder sounds' },
+    nav:{ cards:'Word Cards', cardsSub:'Animals, fruits, colors...', mouth:'Mouth Exercises', mouthSub:'Tongue and lips', sounds:'Sounds & Letters', soundsSub:'R, S, SH, L and more', animals:'Animal Sounds', animalsSub:'Woof, meow, ribbit...', compound:'Compound Words', compoundSub:'Put words together', instructions:'Follow the Steps', instructionsSub:'Step-by-step instructions', game:'Matching Game', gameSub:'Match the picture to the word' },
+    cardsTitle:'Word Cards', cardsSub:'Tap a card to hear the word',
+    mouthTitle:'Mouth Exercises', mouthSub:'Copy the movement!',
+    soundsTitle:'Sounds & Letters', soundsSub:'Choose a sound to practise',
+    compoundTitle:'Compound Words', compoundSub:'Make a new word!',
+    compoundIntro:'Two words together = one new word!',
+    instrTitle:'Follow the Steps', instrSub:'Do each step in order',
+    gameTitle:'Matching Game', gameSub:'Choose the right word!',
+    gamePrompt:'What is this?', listenBtn:'🔊 Listen', tryBtn:'🎤 Try it', stopBtn:'⏹ Stop',
+    rewardTitle:'Great job! 🎉',
+    cats:{ animals:'🐾 Animals', fruits:'🍎 Fruits', colors:'🎨 Colors', body:'🫀 My Body' },
+    aiPrompt:(s,t)=>`You are a warm speech therapy assistant for young children (2-7). The child got ${s} of ${t} correct. Write a short, enthusiastic encouragement in English. Max 2 short sentences. No markdown.`
+  },
+  NL: {
+    welcome:'Hallo! 👋', welcomeSub:'Wat gaan we vandaag doen?',
+    backHome:'Thuis', continueBtn:'Doorgaan! →',
+    levelTitle:'Wie gaat oefenen?', levelSub:'Kies het juiste niveau',
+    levelNames:{ kleintjes:'Kleintjes', groeiers:'Groeiers', slimmerds:'Grote kids' },
+    levelAges:{ kleintjes:'2 – 4 jaar', groeiers:'4 – 6 jaar', slimmerds:'6 – 7 jaar' },
+    levelDescs:{ kleintjes:'Mondoefeningen, eerste woorden, grote knoppen', groeiers:'Klanken, woorden, samengestelde woorden', slimmerds:'Zinnen, opdrachten stap voor stap, moeilijke klanken' },
+    nav:{ cards:'Woordkaarten', cardsSub:'Dieren, fruit, kleuren...', mouth:'Mondoefeningen', mouthSub:'Tong en lippen', sounds:'Klanken & Letters', soundsSub:'R, G, SCH, SL en meer', animals:'Dierengeluiden', animalsSub:'Woef, miauw, kwak kwak...', compound:'Samengestelde woorden', compoundSub:'Maak een nieuw woord', instructions:'Volg de stappen', instructionsSub:'Stap voor stap opdrachten', game:'Raadspel', gameSub:'Koppel het plaatje aan het woord' },
+    cardsTitle:'Woordkaarten', cardsSub:'Tik op een kaart om het woord te horen',
+    mouthTitle:'Mondoefeningen', mouthSub:'Doe de beweging na!',
+    soundsTitle:'Klanken & Letters', soundsSub:'Kies een klank om te oefenen',
+    compoundTitle:'Samengestelde woorden', compoundSub:'Maak een nieuw woord!',
+    compoundIntro:'Twee woorden samen = één nieuw woord!',
+    instrTitle:'Volg de stappen', instrSub:'Doe elke stap in volgorde',
+    gameTitle:'Raadspel', gameSub:'Kies het juiste woord!',
+    gamePrompt:'Wat is dit?', listenBtn:'🔊 Luisteren', tryBtn:'🎤 Probeer', stopBtn:'⏹ Stop',
+    rewardTitle:'Goed gedaan! 🎉',
+    cats:{ animals:'🐾 Dieren', fruits:'🍎 Fruit', colors:'🎨 Kleuren', body:'🫀 Mijn lichaam' },
+    aiPrompt:(s,t)=>`Je bent een warme logopedieassistent voor jonge kinderen (2-7 jaar). Het kind had ${s} van ${t} goed. Schrijf een korte, enthousiaste aanmoediging in het Nederlands. Max 2 korte zinnen. Geen opmaak.`
+  }
+};
+
+// ======================== WORD DATA ========================
+const WORDS = {
+  animals:[
+    {emoji:'🐱',RO:'pisică',    EN:'cat',      NL:'kat',     SYL:{RO:'pi·si·că',   EN:'cat',         NL:'kat'}},
+    {emoji:'🐶',RO:'câine',     EN:'dog',      NL:'hond',    SYL:{RO:'câi·ne',     EN:'dog',         NL:'hond'}},
+    {emoji:'🐦',RO:'pasăre',    EN:'bird',     NL:'vogel',   SYL:{RO:'pa·să·re',   EN:'bird',        NL:'vo·gel'}},
+    {emoji:'🐟',RO:'pește',     EN:'fish',     NL:'vis',     SYL:{RO:'peș·te',     EN:'fish',        NL:'vis'}},
+    {emoji:'🐎',RO:'cal',       EN:'horse',    NL:'paard',   SYL:{RO:'cal',        EN:'horse',       NL:'paard'}},
+    {emoji:'🐇',RO:'iepure',    EN:'rabbit',   NL:'konijn',  SYL:{RO:'ie·pu·re',   EN:'rab·bit',     NL:'ko·nijn'}},
+    {emoji:'🐘',RO:'elefant',   EN:'elephant', NL:'olifant', SYL:{RO:'e·le·fant',  EN:'el·e·phant',  NL:'o·li·fant'}},
+    {emoji:'🦁',RO:'leu',       EN:'lion',     NL:'leeuw',   SYL:{RO:'leu',        EN:'li·on',       NL:'leeuw'}},
+    {emoji:'🐸',RO:'broască',   EN:'frog',     NL:'kikker',  SYL:{RO:'broaș·că',   EN:'frog',        NL:'kik·ker'}},
+    {emoji:'🐮',RO:'vacă',      EN:'cow',      NL:'koe',     SYL:{RO:'va·că',      EN:'cow',         NL:'koe'}},
+  ],
+  fruits:[
+    {emoji:'🍎',RO:'măr',       EN:'apple',      NL:'appel',       SYL:{RO:'măr',          EN:'ap·ple',      NL:'ap·pel'}},
+    {emoji:'🍌',RO:'banană',    EN:'banana',     NL:'banaan',      SYL:{RO:'ba·na·nă',     EN:'ba·na·na',    NL:'ba·naan'}},
+    {emoji:'🍊',RO:'portocală', EN:'orange',     NL:'sinaasappel', SYL:{RO:'por·to·ca·lă', EN:'or·ange',     NL:'si·naas·ap·pel'}},
+    {emoji:'🍓',RO:'căpșună',   EN:'strawberry', NL:'aardbei',     SYL:{RO:'căp·șu·nă',    EN:'straw·ber·ry',NL:'aard·bei'}},
+    {emoji:'🍇',RO:'struguri',  EN:'grapes',     NL:'druiven',     SYL:{RO:'stru·gu·ri',   EN:'grapes',      NL:'drui·ven'}},
+    {emoji:'🍋',RO:'lămâie',    EN:'lemon',      NL:'citroen',     SYL:{RO:'lă·mâ·ie',     EN:'lem·on',      NL:'ci·troen'}},
+    {emoji:'🍑',RO:'piersică',  EN:'peach',      NL:'perzik',      SYL:{RO:'pier·si·că',   EN:'peach',       NL:'per·zik'}},
+    {emoji:'🍒',RO:'cireșe',    EN:'cherries',   NL:'kersen',      SYL:{RO:'ci·re·șe',     EN:'cher·ries',   NL:'ker·sen'}},
+  ],
+  colors:[
+    {emoji:'🔴',RO:'roșu',      EN:'red',    NL:'rood',  SYL:{RO:'ro·șu',       EN:'red',    NL:'rood'}},
+    {emoji:'🔵',RO:'albastru',  EN:'blue',   NL:'blauw', SYL:{RO:'al·bas·tru',  EN:'blue',   NL:'blauw'}},
+    {emoji:'🟢',RO:'verde',     EN:'green',  NL:'groen', SYL:{RO:'ver·de',      EN:'green',  NL:'groen'}},
+    {emoji:'🟡',RO:'galben',    EN:'yellow', NL:'geel',  SYL:{RO:'gal·ben',     EN:'yel·low',NL:'geel'}},
+    {emoji:'🟠',RO:'portocaliu',EN:'orange', NL:'oranje',SYL:{RO:'por·to·ca·liu',EN:'or·ange',NL:'o·ran·je'}},
+    {emoji:'🟣',RO:'mov',       EN:'purple', NL:'paars', SYL:{RO:'mov',         EN:'pur·ple',NL:'paars'}},
+    {emoji:'⚪',RO:'alb',       EN:'white',  NL:'wit',   SYL:{RO:'alb',         EN:'white',  NL:'wit'}},
+    {emoji:'⚫',RO:'negru',     EN:'black',  NL:'zwart', SYL:{RO:'neg·ru',      EN:'black',  NL:'zwart'}},
+  ],
+  body:[
+    {emoji:'👁️',RO:'ochi',  EN:'eye',   NL:'oog',     SYL:{RO:'o·chi',    EN:'eye',    NL:'oog'}},
+    {emoji:'👂',RO:'ureche', EN:'ear',   NL:'oor',     SYL:{RO:'u·re·che', EN:'ear',    NL:'oor'}},
+    {emoji:'👃',RO:'nas',   EN:'nose',  NL:'neus',    SYL:{RO:'nas',      EN:'nose',   NL:'neus'}},
+    {emoji:'👄',RO:'gură',  EN:'mouth', NL:'mond',    SYL:{RO:'gu·ră',    EN:'mouth',  NL:'mond'}},
+    {emoji:'🦷',RO:'dinte', EN:'tooth', NL:'tand',    SYL:{RO:'din·te',   EN:'tooth',  NL:'tand'}},
+    {emoji:'✋',RO:'mână',  EN:'hand',  NL:'hand',    SYL:{RO:'mâ·nă',    EN:'hand',   NL:'hand'}},
+    {emoji:'🦶',RO:'picior',EN:'foot',  NL:'voet',    SYL:{RO:'pi·cior',  EN:'foot',   NL:'voet'}},
+    {emoji:'🙂',RO:'față',  EN:'face',  NL:'gezicht', SYL:{RO:'fa·ță',    EN:'face',   NL:'ge·zicht'}},
+  ],
+};
+
+// ======================== MOUTH EXERCISES ========================
+const MOUTH_EXERCISES = {
+  RO: [
+    { emoji:'😝', name:'Scoate limba', tip:'Scoate limba afară cât poți de mult.', action:'Încearcă tu!' },
+    { emoji:'😗', name:'Buzele rotunde', tip:'Fă un cerculeț cu buzele ca un pește.', action:'Încearcă tu!' },
+    { emoji:'😁', name:'Zâmbet larg', tip:'Zâmbește cât mai larg, să se vadă toți dinții.', action:'Încearcă tu!' },
+    { emoji:'🐍', name:'Limbă de șarpe', tip:'Scoate limba subțire și ascuțită ca un șarpe.', action:'Încearcă tu!' },
+    { emoji:'💨', name:'Suflă', tip:'Suflă aer puternic pe degetul tău.', action:'Încearcă tu!' },
+    { emoji:'🐘', name:'Trompa elefantului', tip:'Împinge buzele înainte ca o trompetă.', action:'Încearcă tu!' },
+  ],
+  EN: [
+    { emoji:'😝', name:'Stick out tongue', tip:'Stick your tongue out as far as you can.', action:'Try it!' },
+    { emoji:'😗', name:'Round lips', tip:'Make a round circle with your lips, like a fish.', action:'Try it!' },
+    { emoji:'😁', name:'Big smile', tip:'Smile as wide as you can, and show all your teeth.', action:'Try it!' },
+    { emoji:'🐍', name:'Snake tongue', tip:'Make your tongue thin and pointy, like a snake.', action:'Try it!' },
+    { emoji:'💨', name:'Blow', tip:'Blow a strong puff of air onto your finger.', action:'Try it!' },
+    { emoji:'🐘', name:'Elephant trunk', tip:'Push your lips forward and out, like a trumpet.', action:'Try it!' },
+  ],
+  NL: [
+    { emoji:'😝', name:'Tong uitsteken', tip:'Steek je tong zo ver mogelijk naar buiten.', action:'Probeer!' },
+    { emoji:'😗', name:'Ronde lippen', tip:'Maak een rondje met je lippen, als een visje.', action:'Probeer!' },
+    { emoji:'😁', name:'Brede lach', tip:'Lach zo breed als je kan, en laat al je tanden zien.', action:'Probeer!' },
+    { emoji:'🐍', name:'Slangtong', tip:'Maak je tong smal en puntig, als een slang.', action:'Probeer!' },
+    { emoji:'💨', name:'Blazen', tip:'Blaas een stevige luchtstoot op je vinger.', action:'Probeer!' },
+    { emoji:'🐘', name:'Olifantsslurf', tip:'Duw je lippen naar voren, als een trompet.', action:'Probeer!' },
+  ],
+};
+
+// ======================== ANIMAL SOUNDS DATA ========================
+const ANIMAL_SOUNDS = {
+  RO: [
+    { emoji:'🐶', name:'Câine',  sound:'ham ham',  file:'ham-ham-ro.mp3'   },
+    { emoji:'🐱', name:'Pisică', sound:'miau',      file:'miau-ro.mp3'      },
+    { emoji:'🐮', name:'Vacă',   sound:'muu',       file:'muu-ro.mp3'       },
+    { emoji:'🐸', name:'Broască',sound:'oac oac',   file:'oac-oac-ro.mp3'   },
+    { emoji:'🐑', name:'Oaie',   sound:'bee',       file:'bee-ro.mp3'       },
+    { emoji:'🐍', name:'Șarpe',  sound:'sss',       file:'sss-ro.mp3'       },
+    { emoji:'🐝', name:'Albină', sound:'bâzzz',     file:'bâzzz-ro.mp3'     },
+    { emoji:'🦁', name:'Leu',    sound:'raaa',      file:'raaa-ro.mp3'      },
+    { emoji:'🐦', name:'Pasăre', sound:'cip cirip', file:'cip-cirip-ro.mp3' },
+    { emoji:'🐴', name:'Cal',    sound:'iiiha',     file:'iiiha-ro.mp3'     },
+  ],
+  EN: [
+    { emoji:'🐶', name:'Dog',    sound:'woof woof', file:'woof-woof-en.mp3' },
+    { emoji:'🐱', name:'Cat',    sound:'meow',      file:'meow-en.mp3'      },
+    { emoji:'🐮', name:'Cow',    sound:'moo',       file:'moo-en.mp3'       },
+    { emoji:'🐸', name:'Frog',   sound:'ribbit',    file:'ribbit-en.mp3'    },
+    { emoji:'🐑', name:'Sheep',  sound:'baaaa',     file:'baaaa-en.mp3'     },
+    { emoji:'🐍', name:'Snake',  sound:'hiss',      file:'sss-en.mp3'       },
+    { emoji:'🐝', name:'Bee',    sound:'buzz',      file:'buzz-en.mp3'      },
+    { emoji:'🦁', name:'Lion',   sound:'roar',      file:'roar-en.mp3'      },
+    { emoji:'🐦', name:'Bird',   sound:'tweet',     file:'tweet-en.mp3'     },
+    { emoji:'🐴', name:'Horse',  sound:'iiiha',     file:'iiiha-en.mp3'     },
+  ],
+  NL: [
+    { emoji:'🐶', name:'Hond',   sound:'woef woef', file:'woof-woof-nl.mp3' },
+    { emoji:'🐱', name:'Kat',    sound:'miauw',     file:'meow-nl.mp3'      },
+    { emoji:'🐮', name:'Koe',    sound:'moo',       file:'moo-nl.mp3'       },
+    { emoji:'🐸', name:'Kikker', sound:'kwak kwak', file:'kwak-kwak-nl.mp3' },
+    { emoji:'🐑', name:'Schaap', sound:'bèhèhè',    file:'bèhèhè-nl.mp3'    },
+    { emoji:'🐍', name:'Slang',  sound:'sss',       file:'sss-nl.mp3'       },
+    { emoji:'🐝', name:'Bij',    sound:'bzzz',      file:'bzzz-nl.mp3'      },
+    { emoji:'🦁', name:'Leeuw',  sound:'raah',      file:'raah-nl.mp3'      },
+    { emoji:'🐦', name:'Vogel',  sound:'piep piep', file:'piep-piep-nl.mp3' },
+    { emoji:'🐴', name:'Paard',  sound:'iiiha',     file:'iiiha-nl.mp3'     },
+  ],
+};
+
+// ======================== SOUNDS DATA ========================
+const SOUNDS = {
+  RO: [
+    { sound:'R', tipEmoji:'👅', tip:'Pune vârful limbii în spatele dinților de sus și fă-o să vibreze.', words:[{word:'rachetă',emoji:'🚀'},{word:'rac',emoji:'🦞'},{word:'roată',emoji:'⭕'}] },
+    { sound:'S', tipEmoji:'🐍', tip:'Dinții aproape, suflă aer subțire, ca un șarpe.', words:[{word:'soare',emoji:'☀️'},{word:'stea',emoji:'⭐'},{word:'sac',emoji:'🎒'}] },
+    { sound:'Ș', tipEmoji:'🍃', tip:'Limba sus, buzele puțin rotunde, suflă cald.', words:[{word:'șarpe',emoji:'🐍'},{word:'șosete',emoji:'🧦'},{word:'șoarece',emoji:'🐭'}] },
+    { sound:'L', tipEmoji:'🎵', tip:'Vârful limbii atinge ușor dinții de sus. La-la-la.', words:[{word:'leu',emoji:'🦁'},{word:'lună',emoji:'🌙'},{word:'lalele',emoji:'🌷'}] },
+    { sound:'CE', tipEmoji:'🚂', tip:'Limba sus în față, spune rapid "ce-ce-ce"!', words:[{word:'cireșe',emoji:'🍒'},{word:'ceai',emoji:'🍵'},{word:'ceas',emoji:'⏰'}] },
+    { sound:'Z', tipEmoji:'🐝', tip:'Ca sunetul S, dar cu vocea pornită, ca o albinuță.', words:[{word:'zâmbet',emoji:'😊'},{word:'zăpadă',emoji:'❄️'},{word:'zbor',emoji:'✈️'}] },
+  ],
+  EN: [
+    { sound:'R', tipEmoji:'🌀', tip:'Curl your tongue back a little. Do not touch anything. Like a little cave.', words:[{word:'rabbit',emoji:'🐇'},{word:'rainbow',emoji:'🌈'},{word:'rocket',emoji:'🚀'}] },
+    { sound:'S', tipEmoji:'🐍', tip:'Teeth close together, blow a thin stream of air, like a snake.', words:[{word:'sun',emoji:'☀️'},{word:'star',emoji:'⭐'},{word:'sock',emoji:'🧦'}] },
+    { sound:'SH', tipEmoji:'🤫', tip:'Round lips forward like a fish, tongue behind teeth. Shhhhh.', words:[{word:'sheep',emoji:'🐑'},{word:'shoe',emoji:'👟'},{word:'ship',emoji:'🚢'}] },
+    { sound:'L', tipEmoji:'☝️', tip:'Tip of tongue touches the bumpy ridge behind your top teeth.', words:[{word:'lion',emoji:'🦁'},{word:'lemon',emoji:'🍋'},{word:'lamp',emoji:'💡'}] },
+    { sound:'TH', tipEmoji:'🕯️', tip:'Stick your tongue out a tiny bit and blow gently.', words:[{word:'three',emoji:'3️⃣'},{word:'thumb',emoji:'👍'},{word:'think',emoji:'🤔'}] },
+    { sound:'CH', tipEmoji:'🚂', tip:'Start with T then quickly add SH. Ch, ch, ch.', words:[{word:'chair',emoji:'🪑'},{word:'cheese',emoji:'🧀'},{word:'cherry',emoji:'🍒'}] },
+  ],
+  NL: [
+    { sound:'R', tipEmoji:'🐱', tip:'Maak je tong trillen achter in je keel, zoals een kat die spint.', words:[{word:'regen',emoji:'🌧️'},{word:'robot',emoji:'🤖'},{word:'rood',emoji:'🔴'}] },
+    { sound:'S', tipEmoji:'🐍', tip:'Tanden bij elkaar, blaas een dun straaltje lucht.', words:[{word:'ster',emoji:'⭐'},{word:'sok',emoji:'🧦'},{word:'zon',emoji:'☀️'}] },
+    { sound:'G', tipEmoji:'🐸', tip:'Achterin je keel, maak een krasgeluid, zoals een kikker.', words:[{word:'geel',emoji:'🟡'},{word:'gras',emoji:'🌿'},{word:'groot',emoji:'🐘'}] },
+    { sound:'SCH', tipEmoji:'✨', tip:'S en dan snel G. Eerst sissen, dan krassen. Sch, sch, sch.', words:[{word:'school',emoji:'🏫'},{word:'schip',emoji:'🚢'},{word:'schoen',emoji:'👟'}] },
+    { sound:'SL', tipEmoji:'🐌', tip:'S en L snel na elkaar. Zoals een slak die glijdt.', words:[{word:'slak',emoji:'🐌'},{word:'sleutel',emoji:'🔑'},{word:'slee',emoji:'🛷'}] },
+    { sound:'UI', tipEmoji:'😮', tip:'Begin met U, mond rond, en glijd naar I, mond breed.', words:[{word:'huis',emoji:'🏠'},{word:'muis',emoji:'🐭'},{word:'tuin',emoji:'🌻'}] },
+  ],
+};
+
+// ======================== COMPOUND WORDS ========================
+const COMPOUND = {
+  RO: {
+    intro:'Două cuvinte împreună = un cuvânt nou!',
+    ex:{ p1:'masă', p2:'față', r:'față de masă' },
+    items:[
+      { word:'carte', answer:'raft', options:['raft','ușă','cap'], result:'raft de cărți' },
+      { word:'câine', answer:'lăbuță', options:['lăbuță','pom','ceai'], result:'lăbuță de câine' },
+      { word:'tort', answer:'lumânare', options:['lumânare','pantofi','apă'], result:'lumânare de tort' },
+      { word:'soare', answer:'raze', options:['raze','scaun','pâine'], result:'raze de soare' },
+    ]
+  },
+  EN: {
+    intro:'Two words together = one new word!',
+    ex:{ p1:'sun', p2:'flower', r:'sunflower' },
+    items:[
+      { word:'rain', answer:'bow', options:['bow','cup','hat'], result:'rainbow' },
+      { word:'butter', answer:'fly', options:['fly','sock','star'], result:'butterfly' },
+      { word:'fire', answer:'truck', options:['truck','book','bird'], result:'fire truck' },
+      { word:'book', answer:'shelf', options:['shelf','moon','cake'], result:'bookshelf' },
+    ]
+  },
+  NL: {
+    intro:'Twee woorden samen = één nieuw woord!',
+    ex:{ p1:'tafel', p2:'poot', r:'tafelpoot' },
+    items:[
+      { word:'boeken', answer:'plank', options:['plank','deur','tand'], result:'boekenplank' },
+      { word:'honden', answer:'riem', options:['riem','stoel','neus'], result:'hondenriem' },
+      { word:'vissen', answer:'kom', options:['kom','lamp','arm'], result:'vissenkom' },
+      { word:'appel', answer:'taart', options:['taart','been','oor'], result:'appeltaart' },
+    ]
+  },
+};
+
+// ======================== INSTRUCTIONS ========================
+const INSTRUCTIONS = {
+  RO: [
+    { title:'Cum îmbraci o pereche de pantofi?', emoji:'👟', steps:['Ia un pantof în mână.','Pune-ți piciorul în pantof.','Trage șireturile.','Fă un fundițe frumos.','Repetă cu celălalt pantof!'] },
+    { title:'Cum faci un suc de portocale?', emoji:'🍊', steps:['Ia o portocală.','Spală portocala cu apă.','Taie portocala în jumătate.','Stoarce portocala.','Toarnă sucul în pahar și bea!'] },
+  ],
+  EN: [
+    { title:'How to put on shoes?', emoji:'👟', steps:['Pick up one shoe.','Put your foot inside.','Pull the laces.','Tie a bow.','Do the same with the other shoe!'] },
+    { title:'How to make orange juice?', emoji:'🍊', steps:['Take an orange.','Wash the orange with water.','Cut the orange in half.','Squeeze the orange.','Pour the juice into a glass and drink!'] },
+  ],
+  NL: [
+    { title:'Hoe doe je schoenen aan?', emoji:'👟', steps:['Pak een schoen op.','Doe je voet in de schoen.','Trek de veters aan.','Maak een strik.','Doe hetzelfde met de andere schoen!'] },
+    { title:'Hoe maak je een boterham?', emoji:'🍞', steps:['Pak een boterham.','Pak het mes.','Smeer boter op de boterham.','Doe kaas of jam erop.','Snijd de boterham doormidden en eet!'] },
+  ],
+};
+
+// ======================== NAV CONFIG PER LEVEL ========================
+const HOME_MENUS = {
+  kleintjes: [
+    { id:'mouth',        color:'orange', icon:'👄' },
+    { id:'animals',      color:'teal',   icon:'🐾' },
+    { id:'cards',        color:'purple', icon:'🖼️' },
+    { id:'game',         color:'blue',   icon:'🎮' },
+  ],
+  groeiers: [
+    { id:'cards',        color:'orange', icon:'🖼️' },
+    { id:'animals',      color:'teal',   icon:'🐾' },
+    { id:'sounds',       color:'purple', icon:'🔤' },
+    { id:'compound',     color:'blue',   icon:'🔗' },
+    { id:'game',         color:'yellow', icon:'🎮' },
+  ],
+  slimmerds: [
+    { id:'cards',        color:'orange', icon:'🖼️' },
+    { id:'animals',      color:'teal',   icon:'🐾' },
+    { id:'sounds',       color:'purple', icon:'🔤' },
+    { id:'compound',     color:'blue',   icon:'🔗' },
+    { id:'instructions', color:'yellow', icon:'📋' },
+    { id:'game',         color:'orange', icon:'🎮' },
+  ],
+};
+
+// ======================== NAVIGATION ========================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+function selectLanguage(lang) {
+  currentLang = lang;
+  updateLevelScreen();
+  showScreen('screen-level');
+}
+function selectLevel(level) {
+  currentLevel = level;
+  document.body.className = 'level-' + level;
+  updateUI();
+  showScreen('screen-home');
+}
+function goHome()      { showScreen('screen-home'); }
+function goToLevel()   { showScreen('screen-level'); }
+
+// ======================== UPDATE UI ========================
+function updateLevelScreen() {
+  const t = UI[currentLang];
+  setText('level-screen-title', t.levelTitle);
+  setText('level-screen-sub',   t.levelSub);
+  const backTexts = { RO:'Înapoi', EN:'Back', NL:'Terug' };
+  setText('back-to-lang', backTexts[currentLang] || 'Terug');
+  ['kleintjes','groeiers','slimmerds'].forEach(l => {
+    setText('lv-name-'+l[0], t.levelNames[l]);
+    setText('lv-age-'+l[0],  t.levelAges[l]);
+    setText('lv-desc-'+l[0], t.levelDescs[l]);
+  });
+}
+
+function updateUI() {
+  const t = UI[currentLang];
+  setText('home-welcome-text', t.welcome);
+  setText('home-welcome-sub',  t.welcomeSub);
+  setText('cards-title',   t.cardsTitle); setText('cards-sub',  t.cardsSub);
+  setText('mouth-title',   t.mouthTitle); setText('mouth-sub',  t.mouthSub);
+  setText('animals-title', t.animalsTitle || t.nav.animals); setText('animals-sub', t.animalsSub || t.nav.animalsSub);
+  setText('sounds-title',  t.soundsTitle); setText('sounds-sub', t.soundsSub);
+  setText('compound-title',t.compoundTitle); setText('compound-sub', t.compoundSub);
+  setText('instr-title',   t.instrTitle); setText('instr-sub',  t.instrSub);
+  setText('game-title',    t.gameTitle);  setText('game-sub',   t.gameSub);
+  setText('reward-btn',    t.continueBtn);
+  document.querySelectorAll('.back-text').forEach(e => e.textContent = t.backHome);
+
+  const lb = document.getElementById('home-level-badge');
+  const icons = { kleintjes:'🌟', groeiers:'🚀', slimmerds:'🎓' };
+  lb.textContent = icons[currentLevel] + ' ' + t.levelNames[currentLevel];
+  lb.className = 'level-badge ' + currentLevel;
+
+  renderHomeCards();
+  updateLevelScreen();
+}
+
+function setText(id, val) { const e=document.getElementById(id); if(e) e.textContent=val; }
+
+// ======================== HOME CARDS ========================
+function renderHomeCards() {
+  const t = UI[currentLang];
+  const menu = HOME_MENUS[currentLevel];
+  const container = document.getElementById('home-cards-container');
+  container.innerHTML = '';
+  menu.forEach(item => {
+    const nav = t.nav;
+    const titleKey = item.id;
+    const subKey   = item.id + 'Sub';
+    const div = document.createElement('div');
+    div.className = `home-card ${item.color}`;
+    div.innerHTML = `
+      <div class="card-icon ${item.color}">${item.icon}</div>
+      <div class="card-info">
+        <div class="card-title">${nav[titleKey]||''}</div>
+        <div class="card-desc">${nav[subKey]||''}</div>
+      </div>
+      <div class="card-arrow">→</div>
+    `;
+    div.onclick = () => navTo(item.id);
+    container.appendChild(div);
+  });
+}
+
+function navTo(id) {
+  switch(id) {
+    case 'cards':        goToCards();        break;
+    case 'mouth':        goToMouth();        break;
+    case 'animals':      goToAnimals();      break;
+    case 'sounds':       goToSounds();       break;
+    case 'compound':     goToCompound();     break;
+    case 'instructions': goToInstructions(); break;
+    case 'game':         goToGame();         break;
+  }
+}
+
+// ======================== STARS ========================
+function addStar() {
+  stars++;
+  document.querySelectorAll('.star-display').forEach(e => e.textContent = stars);
+}
+
+// ======================== WORD CARDS ========================
+let currentCategory = 'animals';
+function goToCards() {
+  currentCategory = 'animals';
+  renderCategoryTabs();
+  renderWordGrid('animals');
+  showScreen('screen-cards');
+}
+function renderCategoryTabs() {
+  const t = UI[currentLang];
+  const tabs = document.getElementById('cat-tabs');
+  tabs.innerHTML = '';
+  Object.keys(WORDS).forEach(key => {
+    const btn = document.createElement('button');
+    btn.className = 'cat-tab' + (key===currentCategory?' active':'');
+    btn.textContent = t.cats[key];
+    btn.onclick = () => {
+      currentCategory = key;
+      document.querySelectorAll('.cat-tab').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      renderWordGrid(key);
+    };
+    tabs.appendChild(btn);
+  });
+}
+function renderWordGrid(cat) {
+  const t = UI[currentLang];
+  const grid = document.getElementById('word-grid');
+  grid.innerHTML = '';
+  WORDS[cat].forEach(item => {
+    const word = item[currentLang];
+    const card = document.createElement('div');
+    card.className = 'word-card';
+    const syl = item.SYL ? item.SYL[currentLang] : '';
+    card.innerHTML = `<span class="word-emoji">${item.emoji}</span><span class="word-text">${word}</span>${syl && syl !== word ? `<span class="word-syllables">${syl}</span>` : ''}<span class="word-listen">${t.listenBtn}</span>`;
+    card.onclick = () => {
+      card.classList.add('playing');
+      speak(word, LANG_VOICE[currentLang]);
+      setTimeout(()=>card.classList.remove('playing'), 1600);
+    };
+    grid.appendChild(card);
+  });
+}
+
+// ======================== MOUTH EXERCISES ========================
+function goToMouth() {
+  const grid = document.getElementById('mouth-grid');
+  const t = UI[currentLang];
+  grid.innerHTML = '';
+  MOUTH_EXERCISES[currentLang].forEach((ex, i) => {
+    const card = document.createElement('div');
+    card.className = 'mouth-card';
+    card.id = 'mouth-' + i;
+    card.innerHTML = `
+      <span class="mouth-big-emoji">${ex.emoji}</span>
+      <span class="mouth-name">${ex.name}</span>
+      <span class="mouth-tip">${ex.tip}</span>
+      <button class="mouth-try-btn" onclick="doMouthExercise(${i})">${ex.action}</button>
+    `;
+    grid.appendChild(card);
+  });
+  showScreen('screen-mouth');
+}
+function doMouthExercise(i) {
+  const card = document.getElementById('mouth-' + i);
+  card.classList.add('doing');
+  const ex = MOUTH_EXERCISES[currentLang][i];
+  speak(ex.tip, LANG_VOICE[currentLang]);
+  addStar();
+  setTimeout(() => {
+    card.classList.remove('doing');
+    showReward(1, 1);
+  }, 2200);
+}
+
+// ======================== ANIMAL SOUNDS ========================
+function goToAnimals() {
+  const t = UI[currentLang];
+  const grid = document.getElementById('animal-grid');
+  grid.innerHTML = '';
+  ANIMAL_SOUNDS[currentLang].forEach((animal, i) => {
+    const card = document.createElement('div');
+    card.className = 'animal-card';
+    card.id = 'animal-' + i;
+    const micBtn = currentLevel === 'kleintjes'
+      ? `<button class="animal-mic-btn" id="amic-${i}" onclick="tryAnimalSound(${i},'${animal.sound}')">🎤 ${t.tryBtn||'Încearcă'}</button>`
+      : `<button class="animal-mic-btn" id="amic-${i}" onclick="recordAnimalSound(${i},'${animal.sound}')">🎤 ${t.tryBtn||'Încearcă'}</button>`;
+    card.innerHTML = `
+      <span class="animal-big-emoji">${animal.emoji}</span>
+      <span class="animal-sound-text">${animal.sound}</span>
+      <button class="animal-listen-btn" onclick="speakAnimal('${animal.listen}',${i})">${t.listenBtn||'🔊 Ascultă'}</button>
+      ${micBtn}
+    `;
+    grid.appendChild(card);
+  });
+  showScreen('screen-animals');
+}
+
+function speakAnimal(sound, i) {
+  const card = document.getElementById('animal-' + i);
+  card.classList.add('active');
+  const animal = ANIMAL_SOUNDS[currentLang][i];
+  if (animal && animal.file) {
+    if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+    const audio = new Audio('/audio/' + animal.file);
+    currentAudio = audio;
+    audio.play().catch(() => fallbackSpeak(sound, LANG_VOICE[currentLang]));
+  } else {
+    fallbackSpeak(sound, LANG_VOICE[currentLang]);
+  }
+  setTimeout(() => card.classList.remove('active'), 1500);
+}
+
+// Kleintjes: always reward the attempt
+function tryAnimalSound(i, sound) {
+  const btn = document.getElementById('amic-' + i);
+  btn.classList.add('recording');
+  fallbackSpeak(sound, LANG_VOICE[currentLang]);
+  setTimeout(() => {
+    btn.classList.remove('recording');
+    addStar();
+    showReward(1, 1);
+  }, 1800);
+}
+
+// Groeiers/Cei mari: actually check with mic
+function recordAnimalSound(i, sound) {
+  const btn = document.getElementById('amic-' + i);
+  const t = UI[currentLang];
+  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+    tryAnimalSound(i, sound); return;
+  }
+  if (isRecording) { isRecording=false; if(window._rec) window._rec.stop(); btn.classList.remove('recording'); btn.textContent=`🎤 ${t.tryBtn||'Încearcă'}`; return; }
+  isRecording = true;
+  btn.classList.add('recording');
+  btn.textContent = t.stopBtn || '⏹ Stop';
+  const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const rec = new Rec();
+  rec.lang = LANG_VOICE[currentLang]; rec.interimResults=false; rec.maxAlternatives=3;
+  window._rec = rec;
+  rec.onresult = (e) => {
+    const results = Array.from(e.results[0]).map(r => r.transcript.toLowerCase().trim());
+    const expected = sound.toLowerCase().replace(/\s+/g,'');
+    const matched = results.some(r => r.replace(/\s+/g,'').includes(expected) || expected.includes(r.replace(/\s+/g,'')));
+    isRecording=false; btn.classList.remove('recording'); btn.textContent=`🎤 ${t.tryBtn||'Încearcă'}`;
+    if (matched) { addStar(); showReward(1,1); }
+    else { speakAnimal(sound, i); } // play the correct sound again gently
+  };
+  rec.onerror = rec.onend = () => { isRecording=false; btn.classList.remove('recording'); btn.textContent=`🎤 ${t.tryBtn||'Încearcă'}`; };
+  rec.start();
+}
+
+// ======================== SOUNDS ========================
+function goToSounds() {
+  renderSoundGrid();
+  document.getElementById('sound-detail').classList.remove('visible');
+  showScreen('screen-sounds');
+}
+function renderSoundGrid() {
+  const grid = document.getElementById('sound-grid');
+  grid.innerHTML = '';
+  SOUNDS[currentLang].forEach((s, i) => {
+    const btn = document.createElement('div');
+    btn.className = 'sound-btn';
+    btn.id = 'sbtn-'+i;
+    btn.innerHTML = `<span class="sound-letter">${s.sound}</span>`;
+    btn.onclick = () => selectSound(i);
+    grid.appendChild(btn);
+  });
+}
+function selectSound(index) {
+  const t = UI[currentLang];
+  const sound = SOUNDS[currentLang][index];
+  document.querySelectorAll('.sound-btn').forEach((b,i) => b.classList.toggle('active', i===index));
+  const detail = document.getElementById('sound-detail');
+  detail.classList.add('visible');
+  const wordsHtml = sound.words.map((w,wi) => `
+    <div class="sound-word-item">
+      <span class="sw-emoji">${w.emoji}</span>
+      <span class="sw-word">${w.word}</span>
+      <button class="sw-btn sw-listen" onclick="speak('${w.word}','${LANG_VOICE[currentLang]}')">${t.listenBtn}</button>
+      <button class="sw-btn sw-try" id="try-${wi}" onclick="toggleRecording(${wi},'${w.word}')">${t.tryBtn}</button>
+    </div>
+  `).join('');
+  detail.innerHTML = `
+    <div class="sound-tip"><span class="tip-emoji">${sound.tipEmoji}</span><span class="tip-text">${sound.tip}</span></div>
+    <div class="sound-words">${wordsHtml}</div>
+  `;
+  setTimeout(() => detail.scrollIntoView({behavior:'smooth',block:'nearest'}), 100);
+}
+
+// ======================== COMPOUND WORDS ========================
+function goToCompound() {
+  const t = UI[currentLang];
+  const data = COMPOUND[currentLang];
+  setText('compound-intro-text', data.intro);
+  setText('ex-part1', data.ex.p1);
+  setText('ex-part2', data.ex.p2);
+  setText('ex-result', data.ex.r);
+  const container = document.getElementById('compound-exercise');
+  container.innerHTML = '';
+  data.items.forEach((item, i) => {
+    const div = document.createElement('div');
+    div.className = 'compound-item';
+    const optsHtml = item.options.map(opt => `<button class="compound-opt" onclick="checkCompound(this,'${opt}','${item.answer}',${i})">${opt}</button>`).join('');
+    div.innerHTML = `
+      <div class="compound-question">
+        <span class="compound-q-word">${item.word}</span>
+        <span style="color:var(--text-light);font-size:1.3rem">+</span>
+        <span class="compound-q-blank" id="blank-${i}"></span>
+        <span style="font-size:1.3rem;color:var(--text-light)">=</span>
+        <span id="result-${i}" style="color:var(--primary);font-weight:800;opacity:0;transition:opacity 0.3s">?</span>
+      </div>
+      <div class="compound-options">${optsHtml}</div>
+    `;
+    container.appendChild(div);
+  });
+  showScreen('screen-compound');
+}
+function checkCompound(btn, chosen, correct, index) {
+  const data = COMPOUND[currentLang];
+  const item = data.items[index];
+  btn.parentElement.querySelectorAll('.compound-opt').forEach(b => b.onclick = null);
+  if (chosen === correct) {
+    btn.classList.add('correct');
+    document.getElementById('result-'+index).textContent = item.result;
+    document.getElementById('result-'+index).style.opacity = '1';
+    addStar();
+    speak(item.result, LANG_VOICE[currentLang]);
+  } else {
+    btn.classList.add('wrong');
+    btn.parentElement.querySelectorAll('.compound-opt').forEach(b => { if(b.textContent===correct) b.classList.add('correct'); });
+  }
+}
+
+// ======================== INSTRUCTIONS ========================
+function goToInstructions() {
+  const data = INSTRUCTIONS[currentLang];
+  const container = document.getElementById('instructions-container');
+  container.innerHTML = '';
+  data.forEach((instr, ii) => {
+    const card = document.createElement('div');
+    card.className = 'instruction-card';
+    const stepsHtml = instr.steps.map((step, si) => `
+      <div class="instr-step" id="step-${ii}-${si}">
+        <div class="step-num">${si+1}</div>
+        <div class="step-text">${step}</div>
+        <div class="step-check">✅</div>
+      </div>
+    `).join('');
+    card.innerHTML = `
+      <div class="instruction-title">${instr.emoji} ${instr.title}</div>
+      <div class="instruction-steps">${stepsHtml}</div>
+      <button class="instr-btn" onclick="readInstructions(${ii},${instr.steps.length})">▶ ${currentLang==='RO'?'Citește':'Lees' === 'Lees' ? (currentLang==='NL'?'Lees':'Read') : 'Read'}</button>
+    `;
+    container.appendChild(card);
+  });
+  showScreen('screen-instructions');
+}
+function readInstructions(ii, total) {
+  // reset steps
+  for(let si=0; si<total; si++) {
+    const el = document.getElementById(`step-${ii}-${si}`);
+    if(el) el.classList.remove('done');
+  }
+  const instr = INSTRUCTIONS[currentLang][ii];
+  let si = 0;
+  function readNext() {
+    if (si >= total) { addStar(); showReward(total, total); return; }
+    const el = document.getElementById(`step-${ii}-${si}`);
+    if(el) el.classList.add('done');
+    speak(instr.steps[si], LANG_VOICE[currentLang]);
+    si++;
+    setTimeout(readNext, 2800);
+  }
+  readNext();
+}
+
+// ======================== GAME ========================
+const GAME_TOTALS = { kleintjes:4, groeiers:8, slimmerds:10 };
+const GAME_OPTS   = { kleintjes:2, groeiers:4, slimmerds:4 };
+
+function goToGame() {
+  gameScore = 0; gameIndex = 0;
+  const total = GAME_TOTALS[currentLevel];
+  const all = Object.values(WORDS).flat();
+  gameItems = shuffle(all).slice(0, total);
+  renderGameProgress();
+  renderGameQuestion();
+  showScreen('screen-game');
+}
+function renderGameProgress() {
+  const prog = document.getElementById('game-progress');
+  prog.innerHTML = gameItems.map((_,i) =>
+    `<div class="progress-dot ${i<gameIndex?'done':i===gameIndex?'current':''}"></div>`
+  ).join('');
+}
+function renderGameQuestion() {
+  if (gameIndex >= gameItems.length) { endGame(); return; }
+  const t = UI[currentLang];
+  const item = gameItems[gameIndex];
+  const correct = item[currentLang];
+  const numOpts = GAME_OPTS[currentLevel];
+  const allWords = Object.values(WORDS).flat().map(w=>w[currentLang]);
+  const wrongs = shuffle(allWords.filter(w=>w!==correct)).slice(0, numOpts-1);
+  const options = shuffle([correct,...wrongs]);
+
+  document.getElementById('game-question').innerHTML = `<span class="game-emoji">${item.emoji}</span><div class="game-prompt">${t.gamePrompt}</div>`;
+  const optDiv = document.getElementById('game-options');
+  optDiv.className = 'game-options opts-' + numOpts;
+  optDiv.innerHTML = '';
+  options.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'game-option';
+    btn.textContent = opt;
+    btn.onclick = () => checkGameAnswer(opt, correct, btn);
+    optDiv.appendChild(btn);
+  });
+  setTimeout(() => speak(correct, LANG_VOICE[currentLang]), 500);
+}
+function checkGameAnswer(chosen, correct, btn) {
+  document.querySelectorAll('.game-option').forEach(b=>b.onclick=null);
+  if (chosen===correct) {
+    btn.classList.add('correct');
+    addStar(); gameScore++;
+    setTimeout(()=>{ gameIndex++; renderGameProgress(); renderGameQuestion(); }, 800);
+  } else {
+    btn.classList.add('wrong');
+    document.querySelectorAll('.game-option').forEach(b=>{ if(b.textContent===correct) b.classList.add('correct'); });
+    setTimeout(()=>{ gameIndex++; renderGameProgress(); renderGameQuestion(); }, 1300);
+  }
+}
+function endGame() { showReward(gameScore, gameItems.length); }
+
+// ======================== REWARD ========================
+function showReward(score, total) {
+  const t = UI[currentLang];
+  const pct = score/total;
+  document.getElementById('reward-stars').textContent = pct>=0.75?'🌟🌟🌟':pct>=0.5?'🌟🌟':'🌟';
+  document.getElementById('reward-title').textContent = t.rewardTitle;
+  document.getElementById('reward-msg').innerHTML = '<div class="loading-dots"><span></span><span></span><span></span></div>';
+  document.getElementById('reward-overlay').classList.add('show');
+  launchConfetti();
+  fetchEncouragement(score, total);
+}
+function closeReward() {
+  document.getElementById('reward-overlay').classList.remove('show');
+  document.getElementById('confetti').classList.remove('show');
+}
+async function fetchEncouragement(score, total) {
+  const t = UI[currentLang];
+  const fallback = { RO:'Ești grozav! Continuă tot așa! 🎊', EN:'Amazing work! You\'re a superstar! 🎊', NL:'Geweldig gedaan! Jij bent een ster! 🎊' };
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1000, messages:[{role:'user',content:t.aiPrompt(score,total)}] })
+    });
+    const data = await res.json();
+    const msg = data.content?.find(c=>c.type==='text')?.text || fallback[currentLang];
+    document.getElementById('reward-msg').textContent = msg;
+  } catch { document.getElementById('reward-msg').textContent = fallback[currentLang]; }
+}
+
+// ======================== SPEECH (Local Audio Files) ========================
+let currentAudio = null;
+
+// Map word text to audio file slug
+const AUDIO_SLUGS = {
+  // Romanian
+  'pisică':'pisica','câine':'caine','pasăre':'pasare','pește':'peste',
+  'cal':'cal','iepure':'iepure','elefant':'elefant','leu':'leu',
+  'broască':'brosca','vacă':'vaca','măr':'mar','banană':'banana',
+  'portocală':'portocala','căpșună':'capsuna','struguri':'struguri',
+  'lămâie':'lamaie','piersică':'piersica','cireșe':'cirese',
+  'roșu':'rosu','albastru':'albastru','verde':'verde','galben':'galben',
+  'portocaliu':'portocaliu','mov':'mov','alb':'alb','negru':'negru',
+  'ochi':'ochi','ureche':'ureche','nas':'nas','gură':'gura',
+  'dinte':'dinte','mână':'mana','picior':'picior','față':'fata',
+  // English
+  'cat':'pisica','dog':'caine','bird':'pasare','fish':'peste',
+  'horse':'cal','rabbit':'iepure','elephant':'elefant','lion':'leu',
+  'frog':'brosca','cow':'vaca','apple':'mar','banana':'banana',
+  'orange':'portocala','strawberry':'capsuna','grapes':'struguri',
+  'lemon':'lamaie','peach':'piersica','cherries':'cirese',
+  'red':'rosu','blue':'albastru','green':'verde','yellow':'galben',
+  'purple':'mov','white':'alb','black':'negru',
+  'eye':'ochi','ear':'ureche','nose':'nas','mouth':'gura',
+  'tooth':'dinte','hand':'mana','foot':'picior','face':'fata',
+  // Dutch
+  'kat':'pisica','hond':'caine','vogel':'pasare','vis':'peste',
+  'paard':'cal','konijn':'iepure','olifant':'elefant','leeuw':'leu',
+  'kikker':'brosca','koe':'vaca','appel':'mar','banaan':'banana',
+  'sinaasappel':'portocala','aardbei':'capsuna','druiven':'struguri',
+  'citroen':'lamaie','perzik':'piersica','kersen':'cirese',
+  'rood':'rosu','blauw':'albastru','groen':'verde','geel':'galben',
+  'oranje':'portocaliu','paars':'mov','wit':'alb','zwart':'negru',
+  'oog':'ochi','oor':'ureche','neus':'nas','mond':'gura',
+  'tand':'dinte','voet':'picior','gezicht':'fata',
+};
+
+const LANG_CODE = { 'ro-RO':'ro', 'en-GB':'en', 'nl-NL':'nl' };
+
+function speak(text, lang) {
+  if (!text) return;
+  if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+
+  const slug = AUDIO_SLUGS[text.toLowerCase()] || AUDIO_SLUGS[text];
+  const langCode = LANG_CODE[lang] || 'en';
+
+  if (slug) {
+    // Use pre-generated audio file
+    const audio = new Audio(`/audio/${slug}-${langCode}.mp3`);
+    currentAudio = audio;
+    audio.play().catch(() => fallbackSpeak(text, lang));
+  } else {
+    // Fallback to browser speech for anything not in audio files (tips, instructions etc)
+    fallbackSpeak(text, lang);
+  }
+}
+
+// Browser fallback for tips, instructions, mouth exercises
+function fallbackSpeak(text, lang) {
+  if (!('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = lang; u.rate = 0.8; u.pitch = 1.1;
+  window.speechSynthesis.speak(u);
+}
+function toggleRecording(wi, word) {
+  const btn = document.getElementById('try-'+wi);
+  const t = UI[currentLang];
+  if(!('webkitSpeechRecognition' in window)&&!('SpeechRecognition' in window)) { speak(word,LANG_VOICE[currentLang]); return; }
+  if(isRecording) { isRecording=false; if(window._rec) window._rec.stop(); btn.textContent=t.tryBtn; btn.classList.remove('recording'); return; }
+  isRecording=true; btn.textContent=t.stopBtn; btn.classList.add('recording');
+  const Rec = window.SpeechRecognition||window.webkitSpeechRecognition;
+  const rec = new Rec();
+  rec.lang=LANG_VOICE[currentLang]; rec.interimResults=false; rec.maxAlternatives=1;
+  window._rec=rec;
+  rec.onresult = (e) => {
+    const said = e.results[0][0].transcript.toLowerCase().trim();
+    const expected = word.toLowerCase();
+    isRecording=false; btn.classList.remove('recording'); btn.textContent=t.tryBtn;
+    if(said.includes(expected)||expected.includes(said)) { addStar(); showReward(1,1); }
+  };
+  rec.onerror=rec.onend=()=>{ isRecording=false; btn.classList.remove('recording'); if(btn.textContent===t.stopBtn) btn.textContent=t.tryBtn; };
+  rec.start();
+}
+
+// ======================== CONFETTI ========================
+function launchConfetti() {
+  const c = document.getElementById('confetti');
+  c.innerHTML=''; c.classList.add('show');
+  const colors=['#FF7043','#FFD54F','#26C6A2','#BA68C8','#42A5F5','#FF80AB','#A5D6A7'];
+  for(let i=0;i<65;i++) {
+    const p=document.createElement('div');
+    p.className='confetto';
+    p.style.cssText=`left:${Math.random()*100}vw;background:${colors[i%colors.length]};width:${Math.random()*10+5}px;height:${Math.random()*10+5}px;border-radius:${Math.random()>.5?'50%':'3px'};animation-duration:${Math.random()*2+1.5}s;animation-delay:${Math.random()*0.5}s;`;
+    c.appendChild(p);
+  }
+  setTimeout(()=>c.classList.remove('show'), 4500);
+}
+
+// ======================== UTILS ========================
+function shuffle(arr) { const a=[...arr]; for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]; } return a; }
+
+// init
+updateLevelScreen();
+</script>
+</body>
+</html>
