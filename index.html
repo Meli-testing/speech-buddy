@@ -1318,12 +1318,12 @@ async function fetchEncouragement(score, total) {
   const t = UI[currentLang];
   const fallback = { RO:'Ești grozav! Continuă tot așa! 🎊', EN:'Amazing work! You\'re a superstar! 🎊', NL:'Geweldig gedaan! Jij bent een ster! 🎊' };
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const res = await fetch('/api/chat', {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1000, messages:[{role:'user',content:t.aiPrompt(score,total)}] })
+      body: JSON.stringify({ prompt: t.aiPrompt(score,total) })
     });
     const data = await res.json();
-    const msg = data.content?.find(c=>c.type==='text')?.text || fallback[currentLang];
+    const msg = data.text || fallback[currentLang];
     document.getElementById('reward-msg').textContent = msg;
   } catch { document.getElementById('reward-msg').textContent = fallback[currentLang]; }
 }
