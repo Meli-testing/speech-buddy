@@ -1,7 +1,10 @@
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const { text, lang } = req.body;
   if (!text) return res.status(400).json({ error: 'No text provided' });
@@ -10,9 +13,9 @@ export default async function handler(req, res) {
   if (!API_KEY) return res.status(500).json({ error: 'No API key' });
 
   const VOICES = {
-    'ro-RO': 'EXAVITQu4vr4xnSDxMaL', // Sarah
-    'en-GB': 'EXAVITQu4vr4xnSDxMaL', // Sarah
-    'nl-NL': 'EXAVITQu4vr4xnSDxMaL', // Sarah
+    'ro-RO': 'EXAVITQu4vr4xnSDxMaL',
+    'en-GB': 'EXAVITQu4vr4xnSDxMaL',
+    'nl-NL': 'EXAVITQu4vr4xnSDxMaL',
   };
 
   const voiceId = VOICES[lang] || VOICES['en-GB'];
