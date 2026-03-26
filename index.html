@@ -109,6 +109,7 @@
     .level-badge.kleintjes { background: #FFF3E0; color: #FF7043; }
     .level-badge.groeiers  { background: #E0F7F4; color: #00A382; }
     .level-badge.slimmerds { background: #F3E5F5; color: #7B1FA2; }
+    .level-badge:hover { filter: brightness(0.93); transform: scale(1.04); transition: all 0.2s; }
     .icon-btn { background: white; border: 2px solid #E0E0E0; border-radius: 12px; padding: 5px 10px; font-family: 'Baloo 2', cursive; font-size: 0.85rem; font-weight: 600; cursor: pointer; color: var(--text); transition: all 0.2s; }
     .icon-btn:hover { border-color: var(--primary); }
 
@@ -441,8 +442,7 @@
     </div>
     <div class="header-right">
       <div class="stars-badge">⭐ <span class="star-display">0</span></div>
-      <div class="level-badge" id="home-level-badge">🌟</div>
-      <button class="icon-btn" onclick="goToLevel()" title="Niveau wisselen">⚙️</button>
+      <div class="level-badge" id="home-level-badge" onclick="goToLevel()" style="cursor:pointer">🌟 ▾</div>
     </div>
   </div>
   <div class="home-welcome">
@@ -913,7 +913,7 @@ function updateUI() {
 
   const lb = document.getElementById('home-level-badge');
   const icons = { kleintjes:'🌟', groeiers:'🚀', slimmerds:'🎓' };
-  lb.textContent = icons[currentLevel] + ' ' + t.levelNames[currentLevel];
+  lb.textContent = icons[currentLevel] + ' ' + t.levelNames[currentLevel] + ' ▾';
   lb.className = 'level-badge ' + currentLevel;
 
   renderHomeCards();
@@ -1386,7 +1386,38 @@ function speak(text, lang) {
 }
 
 // Browser fallback for tips, instructions, mouth exercises
-function fallbackSpeak(text, lang) {
+async function fallbackSpeak(text, lang) {
+  if (!text) return;
+  if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+
+  // ElevenLabs API for tips, instructions, mouth exercises
+  const VOICES = {
+    'ro-RO': 'EXAVITQu4vr4xnSDxMaL',
+    'en-GB': 'EXAVITQu4vr4xnSDxMaL',
+    'nl-NL': 'EXAVITQu4vr4xnSDxMaL',
+  };
+  const langCode = lang.split('-')[0];
+  const voiceId = VOICES[lang] || VOICES['en-GB'];
+
+  try {
+    const res = await fetch('/api/speak', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, lang })
+    });
+    if (!res.ok) throw new Error('API error');
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const audio = new Audio(url);
+    currentAudio = audio;
+    audio.play().catch(() => browserSpeak(text, lang));
+  } catch(e) {
+    console.warn('ElevenLabs fallback to browser:', e);
+    browserSpeak(text, lang);
+  }
+}
+
+function browserSpeak(text, lang) {
   if (!('speechSynthesis' in window)) return;
   window.speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text);
