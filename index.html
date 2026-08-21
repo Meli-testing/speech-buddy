@@ -1120,7 +1120,7 @@ function goToAnimals() {
     card.innerHTML = `
       <span class="animal-big-emoji">${animal.emoji}</span>
       <span class="animal-sound-text">${animal.sound}</span>
-      <button class="animal-listen-btn" onclick="speakAnimal('${animal.listen}',${i})">${t.listenBtn||'🔊 Ascultă'}</button>
+      <button class="animal-listen-btn" onclick="speakAnimal('${animal.sound}',${i})">${t.listenBtn||'🔊 Ascultă'}</button>
     `;
     grid.appendChild(card);
   });
@@ -1471,6 +1471,8 @@ const AUDIO_SLUGS = {
   'Pak een sinaasappel.':'instr-juice-1','Was de sinaasappel met water.':'instr-juice-2',
   'Snijd de sinaasappel doormidden.':'instr-juice-3','Pers de sinaasappel uit.':'instr-juice-4',
   'Giet het sap in een glas en drink!':'instr-juice-5',
+  // Compound-word groeiers results (RO) — self-referential slugs
+  'raft de cărți':'raft-carti','lăbuță de câine':'labuta-caine','lumânare de tort':'lumanare-tort','raze de soare':'raze-soare',
   // Compound-word slimmerds results — self-referential slugs
   'om de zăpadă':'compound-om-zapada','picătură de ploaie':'compound-picatura-ploaie','pahar de lapte':'compound-pahar-lapte',
   'snowman':'compound-snowman','starfish':'compound-starfish','waterfall':'compound-waterfall',
