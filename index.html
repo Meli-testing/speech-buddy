@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>SpeechBuddy</title>
-  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.bunny.net/css?family=baloo-2:400,600,700,800&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg: #FFF8ED;
@@ -184,6 +184,8 @@
       font-size: 0.88rem; font-weight: 700; cursor: pointer; transition: all 0.2s;
     }
     .mouth-try-btn:hover { background: var(--primary-dark); }
+    .mouth-done-btn { background: var(--correct); }
+    .mouth-done-btn:hover { background: #4CAF50; }
 
     /* ===== ANIMAL SOUNDS ===== */
     .animal-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; padding-bottom: 24px; }
@@ -206,13 +208,6 @@
       font-size: 0.85rem; font-weight: 700; cursor: pointer; margin-bottom: 7px; transition: all 0.2s;
     }
     .animal-listen-btn:hover { background: var(--primary-dark); }
-    .animal-mic-btn {
-      width: 100%; padding: 8px; border: none; border-radius: 12px;
-      background: var(--secondary); color: white; font-family: 'Baloo 2', cursive;
-      font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: all 0.2s;
-    }
-    .animal-mic-btn:hover { background: var(--secondary-dark); }
-    .animal-mic-btn.recording { background: var(--wrong); animation: pulse 0.8s infinite; }
 
     /* ===== SOUNDS ===== */
     .sound-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
@@ -232,10 +227,6 @@
     .sw-btn   { padding: 6px 12px; border: none; border-radius: 10px; font-family: 'Baloo 2', cursive; font-size: 0.78rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
     .sw-listen { background: var(--primary); color: white; }
     .sw-listen:hover { background: var(--primary-dark); }
-    .sw-try   { background: var(--secondary); color: white; }
-    .sw-try:hover { background: var(--secondary-dark); }
-    .sw-try.recording { background: var(--wrong); animation: pulse 0.8s infinite; }
-    @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.07)} }
 
     /* ===== COMPOUND WORDS (Groeiers/Slimmerds) ===== */
     .compound-intro { background: white; border-radius: 20px; padding: 18px; box-shadow: var(--shadow); margin-bottom: 16px; }
@@ -577,8 +568,11 @@
 let currentLang  = 'RO';
 let currentLevel = 'groeiers'; // kleintjes | groeiers | slimmerds
 let stars = 0;
-let isRecording = false;
 let gameItems = [], gameIndex = 0, gameScore = 0;
+
+// Tiers are cumulative: kleintjes ⊆ groeiers ⊆ slimmerds
+const LEVEL_RANK = { kleintjes:0, groeiers:1, slimmerds:2 };
+function visibleAtLevel(itemLevel) { return LEVEL_RANK[itemLevel] <= LEVEL_RANK[currentLevel]; }
 
 const LANG_VOICE = { RO:'ro-RO', EN:'en-GB', NL:'nl-NL' };
 
@@ -599,8 +593,10 @@ const UI = {
     compoundIntro:'Două cuvinte împreună = un cuvânt nou!',
     instrTitle:'Urmează pașii', instrSub:'Fă fiecare pas în ordine',
     gameTitle:'Joc de potrivire', gameSub:'Alege cuvântul corect!',
-    gamePrompt:'Ce este asta?', listenBtn:'🔊 Ascultă', tryBtn:'🎤 Încearcă', stopBtn:'⏹ Stop',
+    gamePrompt:'Ce este asta?', listenBtn:'🔊 Ascultă',
     rewardTitle:'Bravo! 🎉',
+    mouthDoneBtn:'✅ Gata! Am încercat!',
+    effortRewardTitle:'Bravo pentru încercare! 💪', effortRewardMsg:'Ai încercat, și asta contează cel mai mult! Continuă tot așa!',
     cats:{ animals:'🐾 Animale', fruits:'🍎 Fructe', colors:'🎨 Culori', body:'🫀 Corpul meu' },
     aiPrompt:(s,t)=>`Ești un asistent de logopedie pentru copii mici (2-7 ani). Copilul a obținut ${s} din ${t} corecte. Scrie o încurajare scurtă, caldă, în română. Maxim 2 propoziții scurte. Fără formatare.`
   },
@@ -619,8 +615,10 @@ const UI = {
     compoundIntro:'Two words together = one new word!',
     instrTitle:'Follow the Steps', instrSub:'Do each step in order',
     gameTitle:'Matching Game', gameSub:'Choose the right word!',
-    gamePrompt:'What is this?', listenBtn:'🔊 Listen', tryBtn:'🎤 Try it', stopBtn:'⏹ Stop',
+    gamePrompt:'What is this?', listenBtn:'🔊 Listen',
     rewardTitle:'Great job! 🎉',
+    mouthDoneBtn:'✅ Done! I tried it!',
+    effortRewardTitle:'Great try! 💪', effortRewardMsg:'You gave it a go, and that’s what matters most! Keep it up!',
     cats:{ animals:'🐾 Animals', fruits:'🍎 Fruits', colors:'🎨 Colors', body:'🫀 My Body' },
     aiPrompt:(s,t)=>`You are a warm speech therapy assistant for young children (2-7). The child got ${s} of ${t} correct. Write a short, enthusiastic encouragement in English. Max 2 short sentences. No markdown.`
   },
@@ -639,8 +637,10 @@ const UI = {
     compoundIntro:'Twee woorden samen = één nieuw woord!',
     instrTitle:'Volg de stappen', instrSub:'Doe elke stap in volgorde',
     gameTitle:'Raadspel', gameSub:'Kies het juiste woord!',
-    gamePrompt:'Wat is dit?', listenBtn:'🔊 Luisteren', tryBtn:'🎤 Probeer', stopBtn:'⏹ Stop',
+    gamePrompt:'Wat is dit?', listenBtn:'🔊 Luisteren',
     rewardTitle:'Goed gedaan! 🎉',
+    mouthDoneBtn:'✅ Klaar! Ik heb het geprobeerd!',
+    effortRewardTitle:'Goed geprobeerd! 💪', effortRewardMsg:'Je hebt het geprobeerd, en dat telt het meest! Ga zo door!',
     cats:{ animals:'🐾 Dieren', fruits:'🍎 Fruit', colors:'🎨 Kleuren', body:'🫀 Mijn lichaam' },
     aiPrompt:(s,t)=>`Je bent een warme logopedieassistent voor jonge kinderen (2-7 jaar). Het kind had ${s} van ${t} goed. Schrijf een korte, enthousiaste aanmoediging in het Nederlands. Max 2 korte zinnen. Geen opmaak.`
   }
@@ -649,46 +649,62 @@ const UI = {
 // ======================== WORD DATA ========================
 const WORDS = {
   animals:[
-    {emoji:'🐱',RO:'pisică',    EN:'cat',      NL:'kat',     SYL:{RO:'pi·si·că',   EN:'cat',         NL:'kat'}},
-    {emoji:'🐶',RO:'câine',     EN:'dog',      NL:'hond',    SYL:{RO:'câi·ne',     EN:'dog',         NL:'hond'}},
-    {emoji:'🐦',RO:'pasăre',    EN:'bird',     NL:'vogel',   SYL:{RO:'pa·să·re',   EN:'bird',        NL:'vo·gel'}},
-    {emoji:'🐟',RO:'pește',     EN:'fish',     NL:'vis',     SYL:{RO:'peș·te',     EN:'fish',        NL:'vis'}},
-    {emoji:'🐎',RO:'cal',       EN:'horse',    NL:'paard',   SYL:{RO:'cal',        EN:'horse',       NL:'paard'}},
-    {emoji:'🐇',RO:'iepure',    EN:'rabbit',   NL:'konijn',  SYL:{RO:'ie·pu·re',   EN:'rab·bit',     NL:'ko·nijn'}},
-    {emoji:'🐘',RO:'elefant',   EN:'elephant', NL:'olifant', SYL:{RO:'e·le·fant',  EN:'el·e·phant',  NL:'o·li·fant'}},
-    {emoji:'🦁',RO:'leu',       EN:'lion',     NL:'leeuw',   SYL:{RO:'leu',        EN:'li·on',       NL:'leeuw'}},
-    {emoji:'🐸',RO:'broască',   EN:'frog',     NL:'kikker',  SYL:{RO:'broaș·că',   EN:'frog',        NL:'kik·ker'}},
-    {emoji:'🐮',RO:'vacă',      EN:'cow',      NL:'koe',     SYL:{RO:'va·că',      EN:'cow',         NL:'koe'}},
+    {emoji:'🐱',RO:'pisică',    EN:'cat',      NL:'kat',     level:'kleintjes', SYL:{RO:'pi·si·că',   EN:'cat',         NL:'kat'}},
+    {emoji:'🐶',RO:'câine',     EN:'dog',      NL:'hond',    level:'kleintjes', SYL:{RO:'câi·ne',     EN:'dog',         NL:'hond'}},
+    {emoji:'🐦',RO:'pasăre',    EN:'bird',     NL:'vogel',   level:'kleintjes', SYL:{RO:'pa·să·re',   EN:'bird',        NL:'vo·gel'}},
+    {emoji:'🐟',RO:'pește',     EN:'fish',     NL:'vis',     level:'kleintjes', SYL:{RO:'peș·te',     EN:'fish',        NL:'vis'}},
+    {emoji:'🐎',RO:'cal',       EN:'horse',    NL:'paard',   level:'kleintjes', SYL:{RO:'cal',        EN:'horse',       NL:'paard'}},
+    {emoji:'🐇',RO:'iepure',    EN:'rabbit',   NL:'konijn',  level:'kleintjes', SYL:{RO:'ie·pu·re',   EN:'rab·bit',     NL:'ko·nijn'}},
+    {emoji:'🐘',RO:'elefant',   EN:'elephant', NL:'olifant', level:'kleintjes', SYL:{RO:'e·le·fant',  EN:'el·e·phant',  NL:'o·li·fant'}},
+    {emoji:'🦁',RO:'leu',       EN:'lion',     NL:'leeuw',   level:'kleintjes', SYL:{RO:'leu',        EN:'li·on',       NL:'leeuw'}},
+    {emoji:'🐸',RO:'broască',   EN:'frog',     NL:'kikker',  level:'kleintjes', SYL:{RO:'broas·că',   EN:'frog',        NL:'kik·ker'}},
+    {emoji:'🐮',RO:'vacă',      EN:'cow',      NL:'koe',     level:'kleintjes', SYL:{RO:'va·că',      EN:'cow',         NL:'koe'}},
+    {emoji:'🦉',RO:'bufniță',   EN:'owl',      NL:'uil',     level:'slimmerds', SYL:{RO:'bu·fni·ță',  EN:'owl',         NL:'uil'}},
+    {emoji:'🐿️',RO:'veveriță',  EN:'squirrel', NL:'eekhoorn',level:'slimmerds', SYL:{RO:'ve·ve·ri·ță',EN:'squir·rel',  NL:'eek·hoorn'}},
+    {emoji:'🦔',RO:'arici',     EN:'hedgehog', NL:'egel',    level:'slimmerds', SYL:{RO:'a·rici',     EN:'hedge·hog',  NL:'e·gel'}},
+    {emoji:'🦒',RO:'girafă',    EN:'giraffe',  NL:'giraf',   level:'slimmerds', SYL:{RO:'gi·ra·fă',   EN:'gi·raffe',   NL:'gi·raf'}},
   ],
   fruits:[
-    {emoji:'🍎',RO:'măr',       EN:'apple',      NL:'appel',       SYL:{RO:'măr',          EN:'ap·ple',      NL:'ap·pel'}},
-    {emoji:'🍌',RO:'banană',    EN:'banana',     NL:'banaan',      SYL:{RO:'ba·na·nă',     EN:'ba·na·na',    NL:'ba·naan'}},
-    {emoji:'🍊',RO:'portocală', EN:'orange',     NL:'sinaasappel', SYL:{RO:'por·to·ca·lă', EN:'or·ange',     NL:'si·naas·ap·pel'}},
-    {emoji:'🍓',RO:'căpșună',   EN:'strawberry', NL:'aardbei',     SYL:{RO:'căp·șu·nă',    EN:'straw·ber·ry',NL:'aard·bei'}},
-    {emoji:'🍇',RO:'struguri',  EN:'grapes',     NL:'druiven',     SYL:{RO:'stru·gu·ri',   EN:'grapes',      NL:'drui·ven'}},
-    {emoji:'🍋',RO:'lămâie',    EN:'lemon',      NL:'citroen',     SYL:{RO:'lă·mâ·ie',     EN:'lem·on',      NL:'ci·troen'}},
-    {emoji:'🍑',RO:'piersică',  EN:'peach',      NL:'perzik',      SYL:{RO:'pier·si·că',   EN:'peach',       NL:'per·zik'}},
-    {emoji:'🍒',RO:'cireșe',    EN:'cherries',   NL:'kersen',      SYL:{RO:'ci·re·șe',     EN:'cher·ries',   NL:'ker·sen'}},
+    {emoji:'🍎',RO:'măr',       EN:'apple',      NL:'appel',       level:'kleintjes', SYL:{RO:'măr',          EN:'ap·ple',      NL:'ap·pel'}},
+    {emoji:'🍌',RO:'banană',    EN:'banana',     NL:'banaan',      level:'kleintjes', SYL:{RO:'ba·na·nă',     EN:'ba·na·na',    NL:'ba·naan'}},
+    {emoji:'🍊',RO:'portocală', EN:'orange',     NL:'sinaasappel', level:'kleintjes', SYL:{RO:'por·to·ca·lă', EN:'or·ange',     NL:'si·naas·ap·pel'}},
+    {emoji:'🍓',RO:'căpșună',   EN:'strawberry', NL:'aardbei',     level:'kleintjes', SYL:{RO:'căp·șu·nă',    EN:'straw·ber·ry',NL:'aard·bei'}},
+    {emoji:'🍇',RO:'struguri',  EN:'grapes',     NL:'druiven',     level:'kleintjes', SYL:{RO:'stru·gu·ri',   EN:'grapes',      NL:'drui·ven'}},
+    {emoji:'🍋',RO:'lămâie',    EN:'lemon',      NL:'citroen',     level:'kleintjes', SYL:{RO:'lă·mâ·ie',     EN:'lem·on',      NL:'ci·troen'}},
+    {emoji:'🍑',RO:'piersică',  EN:'peach',      NL:'perzik',      level:'kleintjes', SYL:{RO:'pier·si·că',   EN:'peach',       NL:'per·zik'}},
+    {emoji:'🍒',RO:'cireșe',    EN:'cherries',   NL:'kersen',      level:'kleintjes', SYL:{RO:'ci·re·șe',     EN:'cher·ries',   NL:'ker·sen'}},
+    {emoji:'🍉',RO:'pepene verde',EN:'watermelon',NL:'watermeloen',level:'slimmerds', SYL:{RO:'pe·pe·ne ver·de',EN:'wa·ter·mel·on',NL:'wa·ter·me·loen'}},
+    {emoji:'🍍',RO:'ananas',    EN:'pineapple',  NL:'ananas',      level:'slimmerds', SYL:{RO:'a·na·nas',     EN:'pine·ap·ple', NL:'a·na·nas'}},
+    {emoji:'🥝',RO:'kiwi',      EN:'kiwi',       NL:'kiwi',        level:'slimmerds', SYL:{RO:'ki·wi',        EN:'ki·wi',       NL:'ki·wi'}},
+    {emoji:'🥥',RO:'nucă de cocos',EN:'coconut', NL:'kokosnoot',   level:'slimmerds', SYL:{RO:'nu·că de co·cos',EN:'co·co·nut', NL:'ko·kos·noot'}},
   ],
   colors:[
-    {emoji:'🔴',RO:'roșu',      EN:'red',    NL:'rood',  SYL:{RO:'ro·șu',       EN:'red',    NL:'rood'}},
-    {emoji:'🔵',RO:'albastru',  EN:'blue',   NL:'blauw', SYL:{RO:'al·bas·tru',  EN:'blue',   NL:'blauw'}},
-    {emoji:'🟢',RO:'verde',     EN:'green',  NL:'groen', SYL:{RO:'ver·de',      EN:'green',  NL:'groen'}},
-    {emoji:'🟡',RO:'galben',    EN:'yellow', NL:'geel',  SYL:{RO:'gal·ben',     EN:'yel·low',NL:'geel'}},
-    {emoji:'🟠',RO:'portocaliu',EN:'orange', NL:'oranje',SYL:{RO:'por·to·ca·liu',EN:'or·ange',NL:'o·ran·je'}},
-    {emoji:'🟣',RO:'mov',       EN:'purple', NL:'paars', SYL:{RO:'mov',         EN:'pur·ple',NL:'paars'}},
-    {emoji:'⚪',RO:'alb',       EN:'white',  NL:'wit',   SYL:{RO:'alb',         EN:'white',  NL:'wit'}},
-    {emoji:'⚫',RO:'negru',     EN:'black',  NL:'zwart', SYL:{RO:'neg·ru',      EN:'black',  NL:'zwart'}},
+    {emoji:'🔴',RO:'roșu',      EN:'red',    NL:'rood',  level:'kleintjes', SYL:{RO:'ro·șu',       EN:'red',    NL:'rood'}},
+    {emoji:'🔵',RO:'albastru',  EN:'blue',   NL:'blauw', level:'kleintjes', SYL:{RO:'al·bas·tru',  EN:'blue',   NL:'blauw'}},
+    {emoji:'🟢',RO:'verde',     EN:'green',  NL:'groen', level:'kleintjes', SYL:{RO:'ver·de',      EN:'green',  NL:'groen'}},
+    {emoji:'🟡',RO:'galben',    EN:'yellow', NL:'geel',  level:'kleintjes', SYL:{RO:'gal·ben',     EN:'yel·low',NL:'geel'}},
+    {emoji:'🟠',RO:'portocaliu',EN:'orange', NL:'oranje',level:'kleintjes', SYL:{RO:'por·to·ca·liu',EN:'or·ange',NL:'o·ran·je'}},
+    {emoji:'🟣',RO:'mov',       EN:'purple', NL:'paars', level:'kleintjes', SYL:{RO:'mov',         EN:'pur·ple',NL:'paars'}},
+    {emoji:'⚪',RO:'alb',       EN:'white',  NL:'wit',   level:'kleintjes', SYL:{RO:'alb',         EN:'white',  NL:'wit'}},
+    {emoji:'⚫',RO:'negru',     EN:'black',  NL:'zwart', level:'kleintjes', SYL:{RO:'neg·ru',      EN:'black',  NL:'zwart'}},
+    {emoji:'🩷',RO:'roz',       EN:'pink',   NL:'roze',  level:'slimmerds', SYL:{RO:'roz',         EN:'pink',   NL:'ro·ze'}},
+    {emoji:'🩶',RO:'gri',       EN:'gray',   NL:'grijs', level:'slimmerds', SYL:{RO:'gri',         EN:'gray',   NL:'grijs'}},
+    {emoji:'🟤',RO:'maro',      EN:'brown',  NL:'bruin', level:'slimmerds', SYL:{RO:'ma·ro',       EN:'brown',  NL:'bruin'}},
+    {emoji:'🩵',RO:'turcoaz',   EN:'turquoise',NL:'turkoois',level:'slimmerds', SYL:{RO:'tur·coaz', EN:'tur·quoise',NL:'tur·koois'}},
   ],
   body:[
-    {emoji:'👁️',RO:'ochi',  EN:'eye',   NL:'oog',     SYL:{RO:'o·chi',    EN:'eye',    NL:'oog'}},
-    {emoji:'👂',RO:'ureche', EN:'ear',   NL:'oor',     SYL:{RO:'u·re·che', EN:'ear',    NL:'oor'}},
-    {emoji:'👃',RO:'nas',   EN:'nose',  NL:'neus',    SYL:{RO:'nas',      EN:'nose',   NL:'neus'}},
-    {emoji:'👄',RO:'gură',  EN:'mouth', NL:'mond',    SYL:{RO:'gu·ră',    EN:'mouth',  NL:'mond'}},
-    {emoji:'🦷',RO:'dinte', EN:'tooth', NL:'tand',    SYL:{RO:'din·te',   EN:'tooth',  NL:'tand'}},
-    {emoji:'✋',RO:'mână',  EN:'hand',  NL:'hand',    SYL:{RO:'mâ·nă',    EN:'hand',   NL:'hand'}},
-    {emoji:'🦶',RO:'picior',EN:'foot',  NL:'voet',    SYL:{RO:'pi·cior',  EN:'foot',   NL:'voet'}},
-    {emoji:'🙂',RO:'față',  EN:'face',  NL:'gezicht', SYL:{RO:'fa·ță',    EN:'face',   NL:'ge·zicht'}},
+    {emoji:'👁️',RO:'ochi',  EN:'eye',   NL:'oog',     level:'kleintjes', SYL:{RO:'o·chi',    EN:'eye',    NL:'oog'}},
+    {emoji:'👂',RO:'ureche', EN:'ear',   NL:'oor',     level:'kleintjes', SYL:{RO:'u·re·che', EN:'ear',    NL:'oor'}},
+    {emoji:'👃',RO:'nas',   EN:'nose',  NL:'neus',    level:'kleintjes', SYL:{RO:'nas',      EN:'nose',   NL:'neus'}},
+    {emoji:'👄',RO:'gură',  EN:'mouth', NL:'mond',    level:'kleintjes', SYL:{RO:'gu·ră',    EN:'mouth',  NL:'mond'}},
+    {emoji:'🦷',RO:'dinte', EN:'tooth', NL:'tand',    level:'kleintjes', SYL:{RO:'din·te',   EN:'tooth',  NL:'tand'}},
+    {emoji:'✋',RO:'mână',  EN:'hand',  NL:'hand',    level:'kleintjes', SYL:{RO:'mâ·nă',    EN:'hand',   NL:'hand'}},
+    {emoji:'🦶',RO:'picior',EN:'foot',  NL:'voet',    level:'kleintjes', SYL:{RO:'pi·cior',  EN:'foot',   NL:'voet'}},
+    {emoji:'🙂',RO:'față',  EN:'face',  NL:'gezicht', level:'kleintjes', SYL:{RO:'fa·ță',    EN:'face',   NL:'ge·zicht'}},
+    {emoji:'🦵',RO:'genunchi',EN:'knee',  NL:'knie',  level:'slimmerds', SYL:{RO:'ge·nunchi',EN:'knee',   NL:'knie'}},
+    {emoji:'👆',RO:'deget', EN:'finger',NL:'vinger',  level:'slimmerds', SYL:{RO:'de·get',   EN:'fin·ger',NL:'vin·ger'}},
+    {emoji:'🧣',RO:'gât',   EN:'neck',  NL:'nek',     level:'slimmerds', SYL:{RO:'gât',      EN:'neck',   NL:'nek'}},
+    {emoji:'🤨',RO:'sprânceană',EN:'eyebrow',NL:'wenkbrauw',level:'slimmerds', SYL:{RO:'sprân·cea·nă',EN:'eye·brow',NL:'wenk·brauw'}},
   ],
 };
 
@@ -723,68 +739,105 @@ const MOUTH_EXERCISES = {
 // ======================== ANIMAL SOUNDS DATA ========================
 const ANIMAL_SOUNDS = {
   RO: [
-    { emoji:'🐶', name:'Câine',  sound:'ham ham',  file:'ham-ham-ro.mp3'   },
-    { emoji:'🐱', name:'Pisică', sound:'miau',      file:'miau-ro.mp3'      },
-    { emoji:'🐮', name:'Vacă',   sound:'muu',       file:'muu-ro.mp3'       },
-    { emoji:'🐸', name:'Broască',sound:'oac oac',   file:'oac-oac-ro.mp3'   },
-    { emoji:'🐑', name:'Oaie',   sound:'bee',       file:'bee-ro.mp3'       },
-    { emoji:'🐍', name:'Șarpe',  sound:'sss',       file:'sss-ro.mp3'       },
-    { emoji:'🐝', name:'Albină', sound:'bâzzz',     file:'bâzzz-ro.mp3'     },
-    { emoji:'🦁', name:'Leu',    sound:'raaa',      file:'raaa-ro.mp3'      },
-    { emoji:'🐦', name:'Pasăre', sound:'cip cirip', file:'cip-cirip-ro.mp3' },
-    { emoji:'🐴', name:'Cal',    sound:'iiiha',     file:'iiiha-ro.mp3'     },
+    { emoji:'🐶', name:'Câine',   sound:'ham ham',   file:'dog.wav'     },
+    { emoji:'🐱', name:'Pisică',  sound:'miau',       file:'cat.wav'     },
+    { emoji:'🐮', name:'Vacă',    sound:'muu',        file:'cow.wav'     },
+    { emoji:'🐸', name:'Broască', sound:'oac oac',    file:'frog.m4a'    },
+    { emoji:'🐑', name:'Oaie',    sound:'bee',        file:'sheep.wav'   },
+    { emoji:'🐍', name:'Șarpe',   sound:'sss',        file:'snake.mp3'   },
+    { emoji:'🐝', name:'Albină',  sound:'bâzzz',      file:'bee.wav'     },
+    { emoji:'🦁', name:'Leu',     sound:'raaa',       file:'lion.wav'    },
+    { emoji:'🐦', name:'Pasăre',  sound:'cip cirip',  file:'bird.wav'    },
+    { emoji:'🐴', name:'Cal',     sound:'iiiha',      file:'horse.wav'   },
+    { emoji:'🐻', name:'Urs',     sound:'mor-mor',    file:'bear.wav'    },
+    { emoji:'🐔', name:'Găină',   sound:'cotcodac',   file:'chicken.m4a' },
+    { emoji:'🦗', name:'Greiere', sound:'cri-cri',    file:'cricket.wav' },
+    { emoji:'🐴', name:'Măgar',   sound:'iha-iha',    file:'donkey.m4a'  },
+    { emoji:'🐐', name:'Capră',   sound:'mee-mee',    file:'goat.mp3'    },
+    { emoji:'🐭', name:'Șoarece', sound:'chiț-chiț',  file:'mouse.mp3'   },
+    { emoji:'🐷', name:'Porc',    sound:'guiț-guiț',  file:'pig.mp3'     },
+    { emoji:'🐓', name:'Cocoș',   sound:'cucurigu',   file:'rooster.m4a' },
+    { emoji:'🐺', name:'Lup',     sound:'auuu',       file:'wolf.m4a'    },
   ],
   EN: [
-    { emoji:'🐶', name:'Dog',    sound:'woof woof', file:'woof-woof-en.mp3' },
-    { emoji:'🐱', name:'Cat',    sound:'meow',      file:'meow-en.mp3'      },
-    { emoji:'🐮', name:'Cow',    sound:'moo',       file:'moo-en.mp3'       },
-    { emoji:'🐸', name:'Frog',   sound:'ribbit',    file:'ribbit-en.mp3'    },
-    { emoji:'🐑', name:'Sheep',  sound:'baaaa',     file:'baaaa-en.mp3'     },
-    { emoji:'🐍', name:'Snake',  sound:'hiss',      file:'sss-en.mp3'       },
-    { emoji:'🐝', name:'Bee',    sound:'buzz',      file:'buzz-en.mp3'      },
-    { emoji:'🦁', name:'Lion',   sound:'roar',      file:'roar-en.mp3'      },
-    { emoji:'🐦', name:'Bird',   sound:'tweet',     file:'tweet-en.mp3'     },
-    { emoji:'🐴', name:'Horse',  sound:'iiiha',     file:'iiiha-en.mp3'     },
+    { emoji:'🐶', name:'Dog',     sound:'woof woof',           file:'dog.wav'     },
+    { emoji:'🐱', name:'Cat',     sound:'meow',                file:'cat.wav'     },
+    { emoji:'🐮', name:'Cow',     sound:'moo',                 file:'cow.wav'     },
+    { emoji:'🐸', name:'Frog',    sound:'ribbit',              file:'frog.m4a'    },
+    { emoji:'🐑', name:'Sheep',   sound:'baaaa',               file:'sheep.wav'   },
+    { emoji:'🐍', name:'Snake',   sound:'hiss',                file:'snake.mp3'   },
+    { emoji:'🐝', name:'Bee',     sound:'buzz',                file:'bee.wav'     },
+    { emoji:'🦁', name:'Lion',    sound:'roar',                file:'lion.wav'    },
+    { emoji:'🐦', name:'Bird',    sound:'tweet',               file:'bird.wav'    },
+    { emoji:'🐴', name:'Horse',   sound:'iiiha',               file:'horse.wav'   },
+    { emoji:'🐻', name:'Bear',    sound:'grr',                 file:'bear.wav'    },
+    { emoji:'🐔', name:'Chicken', sound:'cluck cluck',         file:'chicken.m4a' },
+    { emoji:'🦗', name:'Cricket', sound:'chirp chirp',         file:'cricket.wav' },
+    { emoji:'🐴', name:'Donkey',  sound:'hee-haw',             file:'donkey.m4a'  },
+    { emoji:'🐐', name:'Goat',    sound:'maa',                 file:'goat.mp3'    },
+    { emoji:'🐭', name:'Mouse',   sound:'squeak squeak',       file:'mouse.mp3'   },
+    { emoji:'🐷', name:'Pig',     sound:'oink oink',           file:'pig.mp3'     },
+    { emoji:'🐓', name:'Rooster', sound:'cock-a-doodle-doo',   file:'rooster.m4a' },
+    { emoji:'🐺', name:'Wolf',    sound:'howl',                file:'wolf.m4a'    },
   ],
   NL: [
-    { emoji:'🐶', name:'Hond',   sound:'woef woef', file:'woof-woof-nl.mp3' },
-    { emoji:'🐱', name:'Kat',    sound:'miauw',     file:'meow-nl.mp3'      },
-    { emoji:'🐮', name:'Koe',    sound:'moo',       file:'moo-nl.mp3'       },
-    { emoji:'🐸', name:'Kikker', sound:'kwak kwak', file:'kwak-kwak-nl.mp3' },
-    { emoji:'🐑', name:'Schaap', sound:'bèhèhè',    file:'bèhèhè-nl.mp3'    },
-    { emoji:'🐍', name:'Slang',  sound:'sss',       file:'sss-nl.mp3'       },
-    { emoji:'🐝', name:'Bij',    sound:'bzzz',      file:'bzzz-nl.mp3'      },
-    { emoji:'🦁', name:'Leeuw',  sound:'raah',      file:'raah-nl.mp3'      },
-    { emoji:'🐦', name:'Vogel',  sound:'piep piep', file:'piep-piep-nl.mp3' },
-    { emoji:'🐴', name:'Paard',  sound:'iiiha',     file:'iiiha-nl.mp3'     },
+    { emoji:'🐶', name:'Hond',    sound:'woef woef',   file:'dog.wav'     },
+    { emoji:'🐱', name:'Kat',     sound:'miauw',        file:'cat.wav'     },
+    { emoji:'🐮', name:'Koe',     sound:'moo',          file:'cow.wav'     },
+    { emoji:'🐸', name:'Kikker',  sound:'kwak kwak',    file:'frog.m4a'    },
+    { emoji:'🐑', name:'Schaap',  sound:'bèhèhè',       file:'sheep.wav'   },
+    { emoji:'🐍', name:'Slang',   sound:'sss',          file:'snake.mp3'   },
+    { emoji:'🐝', name:'Bij',     sound:'bzzz',         file:'bee.wav'     },
+    { emoji:'🦁', name:'Leeuw',   sound:'raah',         file:'lion.wav'    },
+    { emoji:'🐦', name:'Vogel',   sound:'tjilp tjilp',  file:'bird.wav'    },
+    { emoji:'🐴', name:'Paard',   sound:'iiiha',        file:'horse.wav'   },
+    { emoji:'🐻', name:'Beer',    sound:'grr',          file:'bear.wav'    },
+    { emoji:'🐔', name:'Kip',     sound:'tok tok',      file:'chicken.m4a' },
+    { emoji:'🦗', name:'Krekel',  sound:'tjirp tjirp',  file:'cricket.wav' },
+    { emoji:'🐴', name:'Ezel',    sound:'ia-ia',        file:'donkey.m4a'  },
+    { emoji:'🐐', name:'Geit',    sound:'mèèè',         file:'goat.mp3'    },
+    { emoji:'🐭', name:'Muis',    sound:'piep piep',    file:'mouse.mp3'   },
+    { emoji:'🐷', name:'Varken',  sound:'knor knor',    file:'pig.mp3'     },
+    { emoji:'🐓', name:'Haan',    sound:'kukeleku',     file:'rooster.m4a' },
+    { emoji:'🐺', name:'Wolf',    sound:'huuu',         file:'wolf.m4a'    },
   ],
 };
 
 // ======================== SOUNDS DATA ========================
 const SOUNDS = {
   RO: [
-    { sound:'R', tipEmoji:'👅', tip:'Pune vârful limbii în spatele dinților de sus și fă-o să vibreze.', words:[{word:'rachetă',emoji:'🚀'},{word:'rac',emoji:'🦞'},{word:'roată',emoji:'⭕'}] },
-    { sound:'S', tipEmoji:'🐍', tip:'Dinții aproape, suflă aer subțire, ca un șarpe.', words:[{word:'soare',emoji:'☀️'},{word:'stea',emoji:'⭐'},{word:'sac',emoji:'🎒'}] },
-    { sound:'Ș', tipEmoji:'🍃', tip:'Limba sus, buzele puțin rotunde, suflă cald.', words:[{word:'șarpe',emoji:'🐍'},{word:'șosete',emoji:'🧦'},{word:'șoarece',emoji:'🐭'}] },
-    { sound:'L', tipEmoji:'🎵', tip:'Vârful limbii atinge ușor dinții de sus. La-la-la.', words:[{word:'leu',emoji:'🦁'},{word:'lună',emoji:'🌙'},{word:'lalele',emoji:'🌷'}] },
-    { sound:'CE', tipEmoji:'🚂', tip:'Limba sus în față, spune rapid "ce-ce-ce"!', words:[{word:'cireșe',emoji:'🍒'},{word:'ceai',emoji:'🍵'},{word:'ceas',emoji:'⏰'}] },
-    { sound:'Z', tipEmoji:'🐝', tip:'Ca sunetul S, dar cu vocea pornită, ca o albinuță.', words:[{word:'zâmbet',emoji:'😊'},{word:'zăpadă',emoji:'❄️'},{word:'zbor',emoji:'✈️'}] },
+    { sound:'R', level:'groeiers', tipEmoji:'👅', tip:'Pune vârful limbii în spatele dinților de sus și fă-o să vibreze.', words:[{word:'rachetă',emoji:'🚀'},{word:'rac',emoji:'🦞'},{word:'roată',emoji:'⭕'}] },
+    { sound:'S', level:'groeiers', tipEmoji:'🐍', tip:'Dinții aproape, suflă aer subțire, ca un șarpe.', words:[{word:'soare',emoji:'☀️'},{word:'stea',emoji:'⭐'},{word:'sac',emoji:'🎒'}] },
+    { sound:'Ș', level:'groeiers', tipEmoji:'🍃', tip:'Limba sus, buzele puțin rotunde, suflă cald.', words:[{word:'șarpe',emoji:'🐍'},{word:'șosete',emoji:'🧦'},{word:'șoarece',emoji:'🐭'}] },
+    { sound:'L', level:'groeiers', tipEmoji:'🎵', tip:'Vârful limbii atinge ușor dinții de sus. La-la-la.', words:[{word:'leu',emoji:'🦁'},{word:'lună',emoji:'🌙'},{word:'lalele',emoji:'🌷'}] },
+    { sound:'CE', level:'groeiers', tipEmoji:'🚂', tip:'Limba sus în față, spune rapid "ce-ce-ce"!', words:[{word:'cireșe',emoji:'🍒'},{word:'ceai',emoji:'🍵'},{word:'ceas',emoji:'⏰'}] },
+    { sound:'Z', level:'groeiers', tipEmoji:'🐝', tip:'Ca sunetul S, dar cu vocea pornită, ca o albinuță.', words:[{word:'zâmbet',emoji:'😊'},{word:'zăpadă',emoji:'❄️'},{word:'zbor',emoji:'✈️'}] },
+    { sound:'CHE/CHI', level:'slimmerds', tipEmoji:'🔑', tip:'Cu "h", che/chi sună ca "k" — diferit de ce/ci! Spune rapid "che-che", "chi-chi".', words:[{word:'cheie',emoji:'🔑'},{word:'ochi',emoji:'👁️'},{word:'ureche',emoji:'👂'}] },
+    { sound:'GHE/GHI', level:'slimmerds', tipEmoji:'👢', tip:'Cu "h", ghe/ghi sună ca "g" — la fel ca che/chi, dar cu vocea pornită.', words:[{word:'ghete',emoji:'👢'},{word:'gheață',emoji:'🧊'},{word:'ghiozdan',emoji:'🎒'}] },
+    { sound:'Ă', level:'slimmerds', tipEmoji:'🗣️', tip:'Gura relaxată, pe jumătate deschisă — un sunet scurt și moale.', words:[{word:'măr',emoji:'🍎'},{word:'pălărie',emoji:'🎩'},{word:'masă',emoji:'🪑'}] },
+    { sound:'Â/Î', level:'slimmerds', tipEmoji:'📍', tip:'Același sunet, scris diferit după loc: "â" în interiorul cuvântului, "î" la început sau sfârșit.', words:[{word:'câine',emoji:'🐶'},{word:'pâine',emoji:'🍞'},{word:'înot',emoji:'🏊'}] },
+    { sound:'Ț', level:'slimmerds', tipEmoji:'🦆', tip:'Vârful limbii atinge dinții de sus, ca un "t" urmat rapid de "s".', words:[{word:'rață',emoji:'🦆'},{word:'ață',emoji:'🧵'},{word:'căsuță',emoji:'🏠'}] },
   ],
   EN: [
-    { sound:'R', tipEmoji:'🌀', tip:'Curl your tongue back a little. Do not touch anything. Like a little cave.', words:[{word:'rabbit',emoji:'🐇'},{word:'rainbow',emoji:'🌈'},{word:'rocket',emoji:'🚀'}] },
-    { sound:'S', tipEmoji:'🐍', tip:'Teeth close together, blow a thin stream of air, like a snake.', words:[{word:'sun',emoji:'☀️'},{word:'star',emoji:'⭐'},{word:'sock',emoji:'🧦'}] },
-    { sound:'SH', tipEmoji:'🤫', tip:'Round lips forward like a fish, tongue behind teeth. Shhhhh.', words:[{word:'sheep',emoji:'🐑'},{word:'shoe',emoji:'👟'},{word:'ship',emoji:'🚢'}] },
-    { sound:'L', tipEmoji:'☝️', tip:'Tip of tongue touches the bumpy ridge behind your top teeth.', words:[{word:'lion',emoji:'🦁'},{word:'lemon',emoji:'🍋'},{word:'lamp',emoji:'💡'}] },
-    { sound:'TH', tipEmoji:'🕯️', tip:'Stick your tongue out a tiny bit and blow gently.', words:[{word:'three',emoji:'3️⃣'},{word:'thumb',emoji:'👍'},{word:'think',emoji:'🤔'}] },
-    { sound:'CH', tipEmoji:'🚂', tip:'Start with T then quickly add SH. Ch, ch, ch.', words:[{word:'chair',emoji:'🪑'},{word:'cheese',emoji:'🧀'},{word:'cherry',emoji:'🍒'}] },
+    { sound:'R', level:'groeiers', tipEmoji:'🌀', tip:'Curl your tongue back a little. Do not touch anything. Like a little cave.', words:[{word:'rabbit',emoji:'🐇'},{word:'rainbow',emoji:'🌈'},{word:'rocket',emoji:'🚀'}] },
+    { sound:'S', level:'groeiers', tipEmoji:'🐍', tip:'Teeth close together, blow a thin stream of air, like a snake.', words:[{word:'sun',emoji:'☀️'},{word:'star',emoji:'⭐'},{word:'sock',emoji:'🧦'}] },
+    { sound:'L', level:'groeiers', tipEmoji:'☝️', tip:'Tip of tongue touches the bumpy ridge behind your top teeth.', words:[{word:'lion',emoji:'🦁'},{word:'lemon',emoji:'🍋'},{word:'lamp',emoji:'💡'}] },
+    { sound:'SH', level:'slimmerds', tipEmoji:'🤫', tip:'Round lips forward like a fish, tongue behind teeth. Shhhhh.', words:[{word:'sheep',emoji:'🐑'},{word:'shoe',emoji:'👟'},{word:'ship',emoji:'🚢'}] },
+    { sound:'TH', level:'slimmerds', tipEmoji:'🕯️', tip:'Stick your tongue out a tiny bit and blow gently.', words:[{word:'three',emoji:'3️⃣'},{word:'thumb',emoji:'👍'},{word:'think',emoji:'🤔'}] },
+    { sound:'CH', level:'slimmerds', tipEmoji:'🚂', tip:'Start with T then quickly add SH. Ch, ch, ch.', words:[{word:'chair',emoji:'🪑'},{word:'cheese',emoji:'🧀'},{word:'cherry',emoji:'🍒'}] },
+    { sound:'WH', level:'slimmerds', tipEmoji:'💨', tip:'Round your lips and blow softly, almost like blowing out a candle.', words:[{word:'whale',emoji:'🐋'},{word:'wheel',emoji:'🎡'},{word:'white',emoji:'⚪'}] },
   ],
   NL: [
-    { sound:'R', tipEmoji:'🐱', tip:'Maak je tong trillen achter in je keel, zoals een kat die spint.', words:[{word:'regen',emoji:'🌧️'},{word:'robot',emoji:'🤖'},{word:'rood',emoji:'🔴'}] },
-    { sound:'S', tipEmoji:'🐍', tip:'Tanden bij elkaar, blaas een dun straaltje lucht.', words:[{word:'ster',emoji:'⭐'},{word:'sok',emoji:'🧦'},{word:'zon',emoji:'☀️'}] },
-    { sound:'G', tipEmoji:'🐸', tip:'Achterin je keel, maak een krasgeluid, zoals een kikker.', words:[{word:'geel',emoji:'🟡'},{word:'gras',emoji:'🌿'},{word:'groot',emoji:'🐘'}] },
-    { sound:'SCH', tipEmoji:'✨', tip:'S en dan snel G. Eerst sissen, dan krassen. Sch, sch, sch.', words:[{word:'school',emoji:'🏫'},{word:'schip',emoji:'🚢'},{word:'schoen',emoji:'👟'}] },
-    { sound:'SL', tipEmoji:'🐌', tip:'S en L snel na elkaar. Zoals een slak die glijdt.', words:[{word:'slak',emoji:'🐌'},{word:'sleutel',emoji:'🔑'},{word:'slee',emoji:'🛷'}] },
-    { sound:'UI', tipEmoji:'😮', tip:'Begin met U, mond rond, en glijd naar I, mond breed.', words:[{word:'huis',emoji:'🏠'},{word:'muis',emoji:'🐭'},{word:'tuin',emoji:'🌻'}] },
+    { sound:'R', level:'groeiers', tipEmoji:'🐱', tip:'Maak je tong trillen achter in je keel, zoals een kat die spint.', words:[{word:'regen',emoji:'🌧️'},{word:'robot',emoji:'🤖'},{word:'rood',emoji:'🔴'}] },
+    { sound:'S', level:'groeiers', tipEmoji:'🐍', tip:'Tanden bij elkaar, blaas een dun straaltje lucht.', words:[{word:'ster',emoji:'⭐'},{word:'sok',emoji:'🧦'},{word:'zon',emoji:'☀️'}] },
+    { sound:'G', level:'groeiers', tipEmoji:'🐸', tip:'Achterin je keel, maak een krasgeluid, zoals een kikker.', words:[{word:'geel',emoji:'🟡'},{word:'gras',emoji:'🌿'},{word:'groot',emoji:'🐘'}] },
+    { sound:'SCH', level:'slimmerds', tipEmoji:'✨', tip:'S en dan snel G. Eerst sissen, dan krassen. Sch, sch, sch.', words:[{word:'school',emoji:'🏫'},{word:'schip',emoji:'🚢'},{word:'schoen',emoji:'👟'}] },
+    { sound:'SL', level:'slimmerds', tipEmoji:'🐌', tip:'S en L snel na elkaar. Zoals een slak die glijdt.', words:[{word:'slak',emoji:'🐌'},{word:'sleutel',emoji:'🔑'},{word:'slee',emoji:'🛷'}] },
+    { sound:'UI', level:'slimmerds', tipEmoji:'😮', tip:'Begin met U, mond rond, en glijd naar I, mond breed.', words:[{word:'huis',emoji:'🏠'},{word:'muis',emoji:'🐭'},{word:'tuin',emoji:'🌻'}] },
+    { sound:'NG', level:'slimmerds', tipEmoji:'👅', tip:'Achterkant van je tong raakt je zachte gehemelte, door je neus.', words:[{word:'ring',emoji:'💍'},{word:'koning',emoji:'🤴'},{word:'tong',emoji:'👅'}] },
+    { sound:'IJ/EI', level:'slimmerds', tipEmoji:'✍️', tip:'Zelfde klank, andere spelling — "ij" en "ei" klinken identiek.', words:[{word:'ijs',emoji:'🍦'},{word:'ei',emoji:'🥚'},{word:'trein',emoji:'🚂'}] },
+    { sound:'OU/AU', level:'slimmerds', tipEmoji:'🥶', tip:'Zelfde klank, andere spelling — "ou" en "au" klinken identiek.', words:[{word:'koud',emoji:'🥶'},{word:'auto',emoji:'🚗'},{word:'blauw',emoji:'🔵'}] },
+    { sound:'EU', level:'slimmerds', tipEmoji:'🚪', tip:'Ronde lippen, tong laag — een beetje zoals "u" maar dan langer.', words:[{word:'deur',emoji:'🚪'},{word:'kleur',emoji:'🎨'},{word:'leuk',emoji:'😄'}] },
   ],
 };
 
@@ -794,30 +847,39 @@ const COMPOUND = {
     intro:'Două cuvinte împreună = un cuvânt nou!',
     ex:{ p1:'masă', p2:'față', r:'față de masă' },
     items:[
-      { word:'carte', answer:'raft', options:['raft','ușă','cap'], result:'raft de cărți' },
-      { word:'câine', answer:'lăbuță', options:['lăbuță','pom','ceai'], result:'lăbuță de câine' },
-      { word:'tort', answer:'lumânare', options:['lumânare','pantofi','apă'], result:'lumânare de tort' },
-      { word:'soare', answer:'raze', options:['raze','scaun','pâine'], result:'raze de soare' },
+      { word:'carte', answer:'raft', options:['raft','ușă','cap'], result:'raft de cărți', level:'groeiers' },
+      { word:'câine', answer:'lăbuță', options:['lăbuță','pom','ceai'], result:'lăbuță de câine', level:'groeiers' },
+      { word:'tort', answer:'lumânare', options:['lumânare','pantofi','apă'], result:'lumânare de tort', level:'groeiers' },
+      { word:'soare', answer:'raze', options:['raze','scaun','pâine'], result:'raze de soare', level:'groeiers' },
+      { word:'zăpadă', answer:'om', options:['om','pom','vânt'], result:'om de zăpadă', level:'slimmerds' },
+      { word:'ploaie', answer:'picătură', options:['picătură','frunză','stea'], result:'picătură de ploaie', level:'slimmerds' },
+      { word:'lapte', answer:'pahar', options:['pahar','minge','carte'], result:'pahar de lapte', level:'slimmerds' },
     ]
   },
   EN: {
     intro:'Two words together = one new word!',
     ex:{ p1:'sun', p2:'flower', r:'sunflower' },
     items:[
-      { word:'rain', answer:'bow', options:['bow','cup','hat'], result:'rainbow' },
-      { word:'butter', answer:'fly', options:['fly','sock','star'], result:'butterfly' },
-      { word:'fire', answer:'truck', options:['truck','book','bird'], result:'fire truck' },
-      { word:'book', answer:'shelf', options:['shelf','moon','cake'], result:'bookshelf' },
+      { word:'rain', answer:'bow', options:['bow','cup','hat'], result:'rainbow', level:'groeiers' },
+      { word:'butter', answer:'fly', options:['fly','sock','star'], result:'butterfly', level:'groeiers' },
+      { word:'fire', answer:'truck', options:['truck','book','bird'], result:'fire truck', level:'groeiers' },
+      { word:'book', answer:'shelf', options:['shelf','moon','cake'], result:'bookshelf', level:'groeiers' },
+      { word:'snow', answer:'man', options:['man','cup','frog'], result:'snowman', level:'slimmerds' },
+      { word:'star', answer:'fish', options:['fish','shoe','tree'], result:'starfish', level:'slimmerds' },
+      { word:'water', answer:'fall', options:['fall','desk','ring'], result:'waterfall', level:'slimmerds' },
     ]
   },
   NL: {
     intro:'Twee woorden samen = één nieuw woord!',
     ex:{ p1:'tafel', p2:'poot', r:'tafelpoot' },
     items:[
-      { word:'boeken', answer:'plank', options:['plank','deur','tand'], result:'boekenplank' },
-      { word:'honden', answer:'riem', options:['riem','stoel','neus'], result:'hondenriem' },
-      { word:'vissen', answer:'kom', options:['kom','lamp','arm'], result:'vissenkom' },
-      { word:'appel', answer:'taart', options:['taart','been','oor'], result:'appeltaart' },
+      { word:'boeken', answer:'plank', options:['plank','deur','tand'], result:'boekenplank', level:'groeiers' },
+      { word:'honden', answer:'riem', options:['riem','stoel','neus'], result:'hondenriem', level:'groeiers' },
+      { word:'vissen', answer:'kom', options:['kom','lamp','arm'], result:'vissenkom', level:'groeiers' },
+      { word:'appel', answer:'taart', options:['taart','been','oor'], result:'appeltaart', level:'groeiers' },
+      { word:'sneeuw', answer:'man', options:['man','kat','stoel'], result:'sneeuwman', level:'slimmerds' },
+      { word:'zonne', answer:'bloem', options:['bloem','tafel','schoen'], result:'zonnebloem', level:'slimmerds' },
+      { word:'regen', answer:'boog', options:['boog','stoel','licht'], result:'regenboog', level:'slimmerds' },
     ]
   },
 };
@@ -825,8 +887,8 @@ const COMPOUND = {
 // ======================== INSTRUCTIONS ========================
 const INSTRUCTIONS = {
   RO: [
-    { title:'Cum îmbraci o pereche de pantofi?', emoji:'👟', steps:['Ia un pantof în mână.','Pune-ți piciorul în pantof.','Trage șireturile.','Fă un fundițe frumos.','Repetă cu celălalt pantof!'] },
-    { title:'Cum faci un suc de portocale?', emoji:'🍊', steps:['Ia o portocală.','Spală portocala cu apă.','Taie portocala în jumătate.','Stoarce portocala.','Toarnă sucul în pahar și bea!'] },
+    { title:'Cum încalți o pereche de pantofi?', emoji:'👟', steps:['Ia un pantof în mână.','Pune-ți piciorul în pantof.','Trage șireturile.','Fă o fundiță frumoasă.','Repetă cu celălalt pantof!'] },
+    { title:'Cum faci un suc de portocale?', emoji:'🍊', steps:['Ia o portocală.','Spală portocala cu apă.','Taie portocala în jumătate.','Stoarce portocala, de zeamă.','Toarnă sucul în pahar și bea!'] },
   ],
   EN: [
     { title:'How to put on shoes?', emoji:'👟', steps:['Pick up one shoe.','Put your foot inside.','Pull the laces.','Tie a bow.','Do the same with the other shoe!'] },
@@ -834,7 +896,7 @@ const INSTRUCTIONS = {
   ],
   NL: [
     { title:'Hoe doe je schoenen aan?', emoji:'👟', steps:['Pak een schoen op.','Doe je voet in de schoen.','Trek de veters aan.','Maak een strik.','Doe hetzelfde met de andere schoen!'] },
-    { title:'Hoe maak je een boterham?', emoji:'🍞', steps:['Pak een boterham.','Pak het mes.','Smeer boter op de boterham.','Doe kaas of jam erop.','Snijd de boterham doormidden en eet!'] },
+    { title:'Hoe maak je sinaasappelsap?', emoji:'🍊', steps:['Pak een sinaasappel.','Was de sinaasappel met water.','Snijd de sinaasappel doormidden.','Pers de sinaasappel uit.','Giet het sap in een glas en drink!'] },
   ],
 };
 
@@ -994,7 +1056,7 @@ function renderWordGrid(cat) {
   const t = UI[currentLang];
   const grid = document.getElementById('word-grid');
   grid.innerHTML = '';
-  WORDS[cat].forEach(item => {
+  WORDS[cat].filter(item => visibleAtLevel(item.level)).forEach(item => {
     const word = item[currentLang];
     const card = document.createElement('div');
     card.className = 'word-card';
@@ -1022,7 +1084,8 @@ function goToMouth() {
       <span class="mouth-big-emoji">${ex.emoji}</span>
       <span class="mouth-name">${ex.name}</span>
       <span class="mouth-tip">${ex.tip}</span>
-      <button class="mouth-try-btn" onclick="doMouthExercise(${i})">${ex.action}</button>
+      <button class="mouth-try-btn" id="mouth-try-${i}" onclick="doMouthExercise(${i})">${ex.action}</button>
+      <button class="mouth-try-btn mouth-done-btn" id="mouth-done-${i}" style="display:none" onclick="finishMouthExercise(${i})">${t.mouthDoneBtn}</button>
     `;
     grid.appendChild(card);
   });
@@ -1033,11 +1096,16 @@ function doMouthExercise(i) {
   card.classList.add('doing');
   const ex = MOUTH_EXERCISES[currentLang][i];
   speak(ex.tip, LANG_VOICE[currentLang]);
+  document.getElementById('mouth-try-'+i).style.display = 'none';
+  document.getElementById('mouth-done-'+i).style.display = '';
+}
+function finishMouthExercise(i) {
+  const card = document.getElementById('mouth-' + i);
+  card.classList.remove('doing');
+  document.getElementById('mouth-done-'+i).style.display = 'none';
+  document.getElementById('mouth-try-'+i).style.display = '';
   addStar();
-  setTimeout(() => {
-    card.classList.remove('doing');
-    showReward(1, 1);
-  }, 2200);
+  showEffortReward();
 }
 
 // ======================== ANIMAL SOUNDS ========================
@@ -1049,14 +1117,10 @@ function goToAnimals() {
     const card = document.createElement('div');
     card.className = 'animal-card';
     card.id = 'animal-' + i;
-    const micBtn = currentLevel === 'kleintjes'
-      ? `<button class="animal-mic-btn" id="amic-${i}" onclick="tryAnimalSound(${i},'${animal.sound}')">🎤 ${t.tryBtn||'Încearcă'}</button>`
-      : `<button class="animal-mic-btn" id="amic-${i}" onclick="recordAnimalSound(${i},'${animal.sound}')">🎤 ${t.tryBtn||'Încearcă'}</button>`;
     card.innerHTML = `
       <span class="animal-big-emoji">${animal.emoji}</span>
       <span class="animal-sound-text">${animal.sound}</span>
       <button class="animal-listen-btn" onclick="speakAnimal('${animal.listen}',${i})">${t.listenBtn||'🔊 Ascultă'}</button>
-      ${micBtn}
     `;
     grid.appendChild(card);
   });
@@ -1078,55 +1142,18 @@ function speakAnimal(sound, i) {
   setTimeout(() => card.classList.remove('active'), 1500);
 }
 
-// Kleintjes: always reward the attempt
-function tryAnimalSound(i, sound) {
-  const btn = document.getElementById('amic-' + i);
-  btn.classList.add('recording');
-  fallbackSpeak(sound, LANG_VOICE[currentLang]);
-  setTimeout(() => {
-    btn.classList.remove('recording');
-    addStar();
-    showReward(1, 1);
-  }, 1800);
-}
-
-// Groeiers/Cei mari: actually check with mic
-function recordAnimalSound(i, sound) {
-  const btn = document.getElementById('amic-' + i);
-  const t = UI[currentLang];
-  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-    tryAnimalSound(i, sound); return;
-  }
-  if (isRecording) { isRecording=false; if(window._rec) window._rec.stop(); btn.classList.remove('recording'); btn.textContent=`🎤 ${t.tryBtn||'Încearcă'}`; return; }
-  isRecording = true;
-  btn.classList.add('recording');
-  btn.textContent = t.stopBtn || '⏹ Stop';
-  const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
-  const rec = new Rec();
-  rec.lang = LANG_VOICE[currentLang]; rec.interimResults=false; rec.maxAlternatives=3;
-  window._rec = rec;
-  rec.onresult = (e) => {
-    const results = Array.from(e.results[0]).map(r => r.transcript.toLowerCase().trim());
-    const expected = sound.toLowerCase().replace(/\s+/g,'');
-    const matched = results.some(r => r.replace(/\s+/g,'').includes(expected) || expected.includes(r.replace(/\s+/g,'')));
-    isRecording=false; btn.classList.remove('recording'); btn.textContent=`🎤 ${t.tryBtn||'Încearcă'}`;
-    if (matched) { addStar(); showReward(1,1); }
-    else { speakAnimal(sound, i); } // play the correct sound again gently
-  };
-  rec.onerror = rec.onend = () => { isRecording=false; btn.classList.remove('recording'); btn.textContent=`🎤 ${t.tryBtn||'Încearcă'}`; };
-  rec.start();
-}
-
 // ======================== SOUNDS ========================
 function goToSounds() {
   renderSoundGrid();
   document.getElementById('sound-detail').classList.remove('visible');
   showScreen('screen-sounds');
 }
+let currentSoundList = [];
 function renderSoundGrid() {
   const grid = document.getElementById('sound-grid');
   grid.innerHTML = '';
-  SOUNDS[currentLang].forEach((s, i) => {
+  currentSoundList = SOUNDS[currentLang].filter(s => visibleAtLevel(s.level));
+  currentSoundList.forEach((s, i) => {
     const btn = document.createElement('div');
     btn.className = 'sound-btn';
     btn.id = 'sbtn-'+i;
@@ -1137,16 +1164,15 @@ function renderSoundGrid() {
 }
 function selectSound(index) {
   const t = UI[currentLang];
-  const sound = SOUNDS[currentLang][index];
+  const sound = currentSoundList[index];
   document.querySelectorAll('.sound-btn').forEach((b,i) => b.classList.toggle('active', i===index));
   const detail = document.getElementById('sound-detail');
   detail.classList.add('visible');
-  const wordsHtml = sound.words.map((w,wi) => `
+  const wordsHtml = sound.words.map((w) => `
     <div class="sound-word-item">
       <span class="sw-emoji">${w.emoji}</span>
       <span class="sw-word">${w.word}</span>
       <button class="sw-btn sw-listen" onclick="speak('${w.word}','${LANG_VOICE[currentLang]}')">${t.listenBtn}</button>
-      <button class="sw-btn sw-try" id="try-${wi}" onclick="toggleRecording(${wi},'${w.word}')">${t.tryBtn}</button>
     </div>
   `).join('');
   detail.innerHTML = `
@@ -1157,6 +1183,7 @@ function selectSound(index) {
 }
 
 // ======================== COMPOUND WORDS ========================
+let currentCompoundItems = [];
 function goToCompound() {
   const t = UI[currentLang];
   const data = COMPOUND[currentLang];
@@ -1166,7 +1193,8 @@ function goToCompound() {
   setText('ex-result', data.ex.r);
   const container = document.getElementById('compound-exercise');
   container.innerHTML = '';
-  data.items.forEach((item, i) => {
+  currentCompoundItems = data.items.filter(item => visibleAtLevel(item.level));
+  currentCompoundItems.forEach((item, i) => {
     const div = document.createElement('div');
     div.className = 'compound-item';
     const optsHtml = item.options.map(opt => `<button class="compound-opt" onclick="checkCompound(this,'${opt}','${item.answer}',${i})">${opt}</button>`).join('');
@@ -1185,10 +1213,14 @@ function goToCompound() {
   showScreen('screen-compound');
 }
 function checkCompound(btn, chosen, correct, index) {
-  const data = COMPOUND[currentLang];
-  const item = data.items[index];
+  const item = currentCompoundItems[index];
   btn.parentElement.querySelectorAll('.compound-opt').forEach(b => b.onclick = null);
-  if (chosen === correct) {
+  const blank = document.getElementById('blank-'+index);
+  const isCorrect = chosen === correct;
+  blank.textContent = chosen;
+  blank.style.color = isCorrect ? 'var(--correct)' : 'var(--wrong)';
+  blank.style.fontWeight = '800';
+  if (isCorrect) {
     btn.classList.add('correct');
     document.getElementById('result-'+index).textContent = item.result;
     document.getElementById('result-'+index).style.opacity = '1';
@@ -1236,9 +1268,9 @@ function readInstructions(ii, total) {
     if (si >= total) { addStar(); showReward(total, total); return; }
     const el = document.getElementById(`step-${ii}-${si}`);
     if(el) el.classList.add('done');
-    speak(instr.steps[si], LANG_VOICE[currentLang]);
+    const current = si;
     si++;
-    setTimeout(readNext, 2800);
+    speak(instr.steps[current], LANG_VOICE[currentLang], readNext);
   }
   readNext();
 }
@@ -1250,7 +1282,7 @@ const GAME_OPTS   = { kleintjes:2, groeiers:4, slimmerds:4 };
 function goToGame() {
   gameScore = 0; gameIndex = 0;
   const total = GAME_TOTALS[currentLevel];
-  const all = Object.values(WORDS).flat();
+  const all = Object.values(WORDS).flat().filter(w => visibleAtLevel(w.level));
   gameItems = shuffle(all).slice(0, total);
   renderGameProgress();
   renderGameQuestion();
@@ -1268,7 +1300,7 @@ function renderGameQuestion() {
   const item = gameItems[gameIndex];
   const correct = item[currentLang];
   const numOpts = GAME_OPTS[currentLevel];
-  const allWords = Object.values(WORDS).flat().map(w=>w[currentLang]);
+  const allWords = Object.values(WORDS).flat().filter(w => visibleAtLevel(w.level)).map(w=>w[currentLang]);
   const wrongs = shuffle(allWords.filter(w=>w!==correct)).slice(0, numOpts-1);
   const options = shuffle([correct,...wrongs]);
 
@@ -1313,6 +1345,16 @@ function showReward(score, total) {
 function closeReward() {
   document.getElementById('reward-overlay').classList.remove('show');
   document.getElementById('confetti').classList.remove('show');
+}
+// Effort-based reward for mouth exercises — no right/wrong to score, so no AI
+// call and no correctness-flavored copy, just praise for trying.
+function showEffortReward() {
+  const t = UI[currentLang];
+  document.getElementById('reward-stars').textContent = '🌟';
+  document.getElementById('reward-title').textContent = t.effortRewardTitle;
+  document.getElementById('reward-msg').textContent = t.effortRewardMsg;
+  document.getElementById('reward-overlay').classList.add('show');
+  launchConfetti();
 }
 async function fetchEncouragement(score, total) {
   const t = UI[currentLang];
@@ -1363,11 +1405,100 @@ const AUDIO_SLUGS = {
   'oranje':'portocaliu','paars':'mov','wit':'alb','zwart':'negru',
   'oog':'ochi','oor':'ureche','neus':'nas','mond':'gura',
   'tand':'dinte','voet':'picior','gezicht':'fata',
+  // slimmerds word-tier additions — Romanian
+  'bufniță':'bufnita','veveriță':'veverita','arici':'arici','girafă':'girafa',
+  'pepene verde':'pepene','ananas':'ananas','kiwi':'kiwi','nucă de cocos':'cocos',
+  'roz':'roz','gri':'gri','maro':'maro','turcoaz':'turcoaz',
+  'genunchi':'genunchi','deget':'deget','gât':'gat','sprânceană':'sprinceana',
+  // slimmerds word-tier additions — English
+  'owl':'bufnita','squirrel':'veverita','hedgehog':'arici','giraffe':'girafa',
+  'watermelon':'pepene','pineapple':'ananas','coconut':'cocos',
+  'pink':'roz','gray':'gri','brown':'maro','turquoise':'turcoaz',
+  'knee':'genunchi','finger':'deget','neck':'gat','eyebrow':'sprinceana',
+  // slimmerds word-tier additions — Dutch
+  'uil':'bufnita','eekhoorn':'veverita','egel':'arici','giraf':'girafa',
+  'watermeloen':'pepene','kokosnoot':'cocos',
+  'roze':'roz','grijs':'gri','bruin':'maro','turkoois':'turcoaz',
+  'knie':'genunchi','vinger':'deget','nek':'gat','wenkbrauw':'sprinceana',
+  // Sound cards (letter groups & diacritics) — self-referential slugs
+  // Romanian
+  'rachetă':'racheta','rac':'rac','roată':'roata',
+  'soare':'soare','stea':'stea','sac':'sac',
+  'șarpe':'sarpe','șosete':'sosete','șoarece':'soarece',
+  'lună':'luna','lalele':'lalele',
+  'ceai':'ceai','ceas':'ceas',
+  'zâmbet':'zambet','zăpadă':'zapada','zbor':'zbor',
+  'cheie':'cheie','ghete':'ghete','gheață':'gheata','ghiozdan':'ghiozdan',
+  'pălărie':'palarie','masă':'masa',
+  'pâine':'paine','înot':'inot',
+  'rață':'rata','ață':'ata','căsuță':'casuta',
+  // English
+  'rainbow':'rainbow','rocket':'rocket',
+  'sun':'sun','star':'star','sock':'sock',
+  'sheep':'sheep','shoe':'shoe','ship':'ship',
+  'lamp':'lamp',
+  'three':'three','thumb':'thumb','think':'think',
+  'chair':'chair','cheese':'cheese','cherry':'cherry',
+  'whale':'whale','wheel':'wheel',
+  // Dutch
+  'regen':'regen','robot':'robot',
+  'ster':'ster','sok':'sok','zon':'zon',
+  'gras':'gras','groot':'groot',
+  'school':'school','schip':'schip','schoen':'schoen',
+  'slak':'slak','sleutel':'sleutel','slee':'slee',
+  'huis':'huis','muis':'muis','tuin':'tuin',
+  'ring':'ring','koning':'koning','tong':'tong',
+  'ijs':'ijs','ei':'ei','trein':'trein',
+  'koud':'koud','auto':'auto',
+  'deur':'deur','kleur':'kleur','leuk':'leuk',
+  // Instructions (full sentences) — pre-generated, shared slug per step across
+  // languages EXCEPT NL card 2, which is different content (sandwich, not juice)
+  'Ia un pantof în mână.':'instr-shoes-1','Pune-ți piciorul în pantof.':'instr-shoes-2',
+  'Trage șireturile.':'instr-shoes-3','Fă o fundiță frumoasă.':'instr-shoes-4',
+  'Repetă cu celălalt pantof!':'instr-shoes-5',
+  'Ia o portocală.':'instr-juice-1','Spală portocala cu apă.':'instr-juice-2',
+  'Taie portocala în jumătate.':'instr-juice-3','Stoarce portocala, de zeamă.':'instr-juice-4',
+  'Toarnă sucul în pahar și bea!':'instr-juice-5',
+  'Pick up one shoe.':'instr-shoes-1','Put your foot inside.':'instr-shoes-2',
+  'Pull the laces.':'instr-shoes-3','Tie a bow.':'instr-shoes-4',
+  'Do the same with the other shoe!':'instr-shoes-5',
+  'Take an orange.':'instr-juice-1','Wash the orange with water.':'instr-juice-2',
+  'Cut the orange in half.':'instr-juice-3','Squeeze the orange.':'instr-juice-4',
+  'Pour the juice into a glass and drink!':'instr-juice-5',
+  'Pak een schoen op.':'instr-shoes-1','Doe je voet in de schoen.':'instr-shoes-2',
+  'Trek de veters aan.':'instr-shoes-3','Maak een strik.':'instr-shoes-4',
+  'Doe hetzelfde met de andere schoen!':'instr-shoes-5',
+  'Pak een sinaasappel.':'instr-juice-1','Was de sinaasappel met water.':'instr-juice-2',
+  'Snijd de sinaasappel doormidden.':'instr-juice-3','Pers de sinaasappel uit.':'instr-juice-4',
+  'Giet het sap in een glas en drink!':'instr-juice-5',
+  // Compound-word slimmerds results — self-referential slugs
+  'om de zăpadă':'compound-om-zapada','picătură de ploaie':'compound-picatura-ploaie','pahar de lapte':'compound-pahar-lapte',
+  'snowman':'compound-snowman','starfish':'compound-starfish','waterfall':'compound-waterfall',
+  'sneeuwman':'compound-sneeuwman','zonnebloem':'compound-zonnebloem','regenboog':'compound-regenboog',
+  // Mouth exercise tips — shared slug per exercise across languages
+  'Scoate limba afară cât poți de mult.':'mouth-tongue-out',
+  'Fă un cerculeț cu buzele ca un pește.':'mouth-round-lips',
+  'Zâmbește cât mai larg, să se vadă toți dinții.':'mouth-big-smile',
+  'Scoate limba subțire și ascuțită ca un șarpe.':'mouth-snake-tongue',
+  'Suflă aer puternic pe degetul tău.':'mouth-blow',
+  'Împinge buzele înainte ca o trompetă.':'mouth-elephant-trunk',
+  'Stick your tongue out as far as you can.':'mouth-tongue-out',
+  'Make a round circle with your lips, like a fish.':'mouth-round-lips',
+  'Smile as wide as you can, and show all your teeth.':'mouth-big-smile',
+  'Make your tongue thin and pointy, like a snake.':'mouth-snake-tongue',
+  'Blow a strong puff of air onto your finger.':'mouth-blow',
+  'Push your lips forward and out, like a trumpet.':'mouth-elephant-trunk',
+  'Steek je tong zo ver mogelijk naar buiten.':'mouth-tongue-out',
+  'Maak een rondje met je lippen, als een visje.':'mouth-round-lips',
+  'Lach zo breed als je kan, en laat al je tanden zien.':'mouth-big-smile',
+  'Maak je tong smal en puntig, als een slang.':'mouth-snake-tongue',
+  'Blaas een stevige luchtstoot op je vinger.':'mouth-blow',
+  'Duw je lippen naar voren, als een trompet.':'mouth-elephant-trunk',
 };
 
 const LANG_CODE = { 'ro-RO':'ro', 'en-GB':'en', 'nl-NL':'nl' };
 
-function speak(text, lang) {
+function speak(text, lang, onEnded) {
   if (!text) return;
   if (currentAudio) { currentAudio.pause(); currentAudio = null; }
 
@@ -1378,26 +1509,18 @@ function speak(text, lang) {
     // Use pre-generated audio file
     const audio = new Audio(`/audio/${slug}-${langCode}.mp3`);
     currentAudio = audio;
-    audio.play().catch(() => fallbackSpeak(text, lang));
+    if (onEnded) audio.addEventListener('ended', onEnded, { once: true });
+    audio.play().catch(() => fallbackSpeak(text, lang, onEnded));
   } else {
     // Fallback to browser speech for anything not in audio files (tips, instructions etc)
-    fallbackSpeak(text, lang);
+    fallbackSpeak(text, lang, onEnded);
   }
 }
 
 // Browser fallback for tips, instructions, mouth exercises
-async function fallbackSpeak(text, lang) {
+async function fallbackSpeak(text, lang, onEnded) {
   if (!text) return;
   if (currentAudio) { currentAudio.pause(); currentAudio = null; }
-
-  // ElevenLabs API for tips, instructions, mouth exercises
-  const VOICES = {
-    'ro-RO': 'EXAVITQu4vr4xnSDxMaL',
-    'en-GB': 'EXAVITQu4vr4xnSDxMaL',
-    'nl-NL': 'EXAVITQu4vr4xnSDxMaL',
-  };
-  const langCode = lang.split('-')[0];
-  const voiceId = VOICES[lang] || VOICES['en-GB'];
 
   try {
     const res = await fetch('/api/speak', {
@@ -1410,40 +1533,22 @@ async function fallbackSpeak(text, lang) {
     const url = URL.createObjectURL(blob);
     const audio = new Audio(url);
     currentAudio = audio;
-    audio.play().catch(() => browserSpeak(text, lang));
+    if (onEnded) audio.addEventListener('ended', onEnded, { once: true });
+    audio.play().catch(() => browserSpeak(text, lang, onEnded));
   } catch(e) {
     console.warn('ElevenLabs fallback to browser:', e);
-    browserSpeak(text, lang);
+    browserSpeak(text, lang, onEnded);
   }
 }
 
-function browserSpeak(text, lang) {
-  if (!('speechSynthesis' in window)) return;
+function browserSpeak(text, lang, onEnded) {
+  if (!('speechSynthesis' in window)) { if (onEnded) onEnded(); return; }
   window.speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text);
   u.lang = lang; u.rate = 0.8; u.pitch = 1.1;
+  if (onEnded) { u.onend = onEnded; u.onerror = onEnded; }
   window.speechSynthesis.speak(u);
 }
-function toggleRecording(wi, word) {
-  const btn = document.getElementById('try-'+wi);
-  const t = UI[currentLang];
-  if(!('webkitSpeechRecognition' in window)&&!('SpeechRecognition' in window)) { speak(word,LANG_VOICE[currentLang]); return; }
-  if(isRecording) { isRecording=false; if(window._rec) window._rec.stop(); btn.textContent=t.tryBtn; btn.classList.remove('recording'); return; }
-  isRecording=true; btn.textContent=t.stopBtn; btn.classList.add('recording');
-  const Rec = window.SpeechRecognition||window.webkitSpeechRecognition;
-  const rec = new Rec();
-  rec.lang=LANG_VOICE[currentLang]; rec.interimResults=false; rec.maxAlternatives=1;
-  window._rec=rec;
-  rec.onresult = (e) => {
-    const said = e.results[0][0].transcript.toLowerCase().trim();
-    const expected = word.toLowerCase();
-    isRecording=false; btn.classList.remove('recording'); btn.textContent=t.tryBtn;
-    if(said.includes(expected)||expected.includes(said)) { addStar(); showReward(1,1); }
-  };
-  rec.onerror=rec.onend=()=>{ isRecording=false; btn.classList.remove('recording'); if(btn.textContent===t.stopBtn) btn.textContent=t.tryBtn; };
-  rec.start();
-}
-
 // ======================== CONFETTI ========================
 function launchConfetti() {
   const c = document.getElementById('confetti');
