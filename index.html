@@ -162,6 +162,7 @@
     .word-card:hover { transform: scale(1.03); }
     .word-card.playing { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(255,213,79,0.3); }
     .word-emoji   { font-size: var(--word-emoji); display: block; margin-bottom: 9px; }
+    .color-dot    { display: inline-block; width: 0.85em; height: 0.85em; border-radius: 50%; border: 2px solid rgba(0,0,0,0.12); vertical-align: -0.05em; }
     .word-text    { font-size: var(--word-font); font-weight: 700; color: var(--text); display: block; }
     .word-listen  { margin-top: 8px; display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; background: #FFF3E0; border-radius: 20px; font-size: 0.76rem; font-weight: 600; color: var(--primary); }
     .word-syllables { margin-top: 5px; font-size: 0.78rem; color: var(--secondary-dark); font-weight: 700; letter-spacing: 0.03em; display: block; }
@@ -689,10 +690,10 @@ const WORDS = {
     {emoji:'🟣',RO:'mov',       EN:'purple', NL:'paars', level:'kleintjes', SYL:{RO:'mov',         EN:'pur·ple',NL:'paars'}},
     {emoji:'⚪',RO:'alb',       EN:'white',  NL:'wit',   level:'kleintjes', SYL:{RO:'alb',         EN:'white',  NL:'wit'}},
     {emoji:'⚫',RO:'negru',     EN:'black',  NL:'zwart', level:'kleintjes', SYL:{RO:'neg·ru',      EN:'black',  NL:'zwart'}},
-    {emoji:'🩷',RO:'roz',       EN:'pink',   NL:'roze',  level:'slimmerds', SYL:{RO:'roz',         EN:'pink',   NL:'ro·ze'}},
-    {emoji:'🩶',RO:'gri',       EN:'gray',   NL:'grijs', level:'slimmerds', SYL:{RO:'gri',         EN:'gray',   NL:'grijs'}},
+    {emoji:'<span class="color-dot" style="background:#FF6FA5"></span>',RO:'roz',       EN:'pink',   NL:'roze',  level:'slimmerds', SYL:{RO:'roz',         EN:'pink',   NL:'ro·ze'}},
+    {emoji:'<span class="color-dot" style="background:#9AA0A6"></span>',RO:'gri',       EN:'gray',   NL:'grijs', level:'slimmerds', SYL:{RO:'gri',         EN:'gray',   NL:'grijs'}},
     {emoji:'🟤',RO:'maro',      EN:'brown',  NL:'bruin', level:'slimmerds', SYL:{RO:'ma·ro',       EN:'brown',  NL:'bruin'}},
-    {emoji:'🩵',RO:'turcoaz',   EN:'turquoise',NL:'turkoois',level:'slimmerds', SYL:{RO:'tur·coaz', EN:'tur·quoise',NL:'tur·koois'}},
+    {emoji:'<span class="color-dot" style="background:#2DD4BF"></span>',RO:'turcoaz',   EN:'turquoise',NL:'turkoois',level:'slimmerds', SYL:{RO:'tur·coaz', EN:'tur·quoise',NL:'tur·koois'}},
   ],
   body:[
     {emoji:'👁️',RO:'ochi',  EN:'eye',   NL:'oog',     level:'kleintjes', SYL:{RO:'o·chi',    EN:'eye',    NL:'oog'}},
@@ -1199,7 +1200,7 @@ function goToCompound() {
   currentCompoundItems.forEach((item, i) => {
     const div = document.createElement('div');
     div.className = 'compound-item';
-    const optsHtml = item.options.map(opt => `<button class="compound-opt" onclick="checkCompound(this,'${opt}','${item.answer}',${i})">${opt}</button>`).join('');
+    const optsHtml = shuffle(item.options).map(opt => `<button class="compound-opt" onclick="checkCompound(this,'${opt}','${item.answer}',${i})">${opt}</button>`).join('');
     div.innerHTML = `
       <div class="compound-question">
         <span class="compound-q-word">${item.word}</span>
