@@ -252,15 +252,17 @@
     .instruction-card { background: white; border-radius: 20px; padding: 20px; box-shadow: var(--shadow); margin-bottom: 14px; }
     .instruction-title { font-size: 1.1rem; font-weight: 800; color: var(--text); margin-bottom: 12px; }
     .instruction-steps { display: flex; flex-direction: column; gap: 9px; }
-    .instr-step { display: flex; align-items: flex-start; gap: 11px; padding: 11px 13px; border-radius: 14px; background: #F5F5F5; transition: all 0.2s; }
-    .instr-step.done { background: #E8F5E9; }
-    .step-num { width: 28px; height: 28px; border-radius: 50%; background: var(--primary); color: white; font-weight: 800; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .instr-step.done .step-num { background: var(--correct); }
+    .instruction-solved { display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px; }
+    .instr-step { display: flex; align-items: flex-start; gap: 11px; padding: 11px 13px; border-radius: 14px; background: #E8F5E9; animation: popIn 0.3s ease; }
+    .step-num { width: 28px; height: 28px; border-radius: 50%; background: var(--correct); color: white; font-weight: 800; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .step-text { flex: 1; font-size: 0.93rem; font-weight: 600; line-height: 1.4; padding-top: 3px; }
-    .step-check { font-size: 1.2rem; opacity: 0; transition: all 0.2s; }
-    .instr-step.done .step-check { opacity: 1; }
-    .instr-btn { width: 100%; padding: 13px; border: none; border-radius: 16px; background: var(--purple); color: white; font-family: 'Baloo 2', cursive; font-size: 1rem; font-weight: 800; cursor: pointer; transition: all 0.2s; margin-top: 14px; }
-    .instr-btn:hover { filter: brightness(1.1); }
+    .step-check { font-size: 1.2rem; }
+    .instruction-pool { display: flex; flex-direction: column; gap: 8px; }
+    .instr-chip { padding: 12px 14px; border-radius: 14px; background: #F5F5F5; font-size: 0.93rem; font-weight: 600; line-height: 1.4; cursor: pointer; transition: background 0.15s, transform 0.1s; border: 2px solid transparent; }
+    .instr-chip:hover { background: #EFEFEF; }
+    .instr-chip:active { transform: scale(0.98); }
+    .instr-chip.shake { animation: shake 0.35s; border-color: #FFAB91; }
+    @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }
 
     /* ===== MATCHING GAME ===== */
     .game-progress { display: flex; gap: 7px; justify-content: center; flex-wrap: wrap; margin-bottom: 16px; }
@@ -742,7 +744,7 @@ const ANIMAL_SOUNDS = {
     { emoji:'🐶', name:'Câine',   sound:'ham ham',   file:'dog.wav'     },
     { emoji:'🐱', name:'Pisică',  sound:'miau',       file:'cat.wav'     },
     { emoji:'🐮', name:'Vacă',    sound:'muu',        file:'cow.wav'     },
-    { emoji:'🐸', name:'Broască', sound:'oac oac',    file:'frog.m4a'    },
+    { emoji:'🐸', name:'Broască', sound:'oac oac',    file:'frog.mp3'    },
     { emoji:'🐑', name:'Oaie',    sound:'bee',        file:'sheep.wav'   },
     { emoji:'🐍', name:'Șarpe',   sound:'sss',        file:'snake.mp3'   },
     { emoji:'🐝', name:'Albină',  sound:'bâzzz',      file:'bee.wav'     },
@@ -757,13 +759,13 @@ const ANIMAL_SOUNDS = {
     { emoji:'🐭', name:'Șoarece', sound:'chiț-chiț',  file:'mouse.mp3'   },
     { emoji:'🐷', name:'Porc',    sound:'guiț-guiț',  file:'pig.mp3'     },
     { emoji:'🐓', name:'Cocoș',   sound:'cucurigu',   file:'rooster.m4a' },
-    { emoji:'🐺', name:'Lup',     sound:'auuu',       file:'wolf.m4a'    },
+    { emoji:'🐺', name:'Lup',     sound:'auuu',       file:'wolf.wav'    },
   ],
   EN: [
     { emoji:'🐶', name:'Dog',     sound:'woof woof',           file:'dog.wav'     },
     { emoji:'🐱', name:'Cat',     sound:'meow',                file:'cat.wav'     },
     { emoji:'🐮', name:'Cow',     sound:'moo',                 file:'cow.wav'     },
-    { emoji:'🐸', name:'Frog',    sound:'ribbit',              file:'frog.m4a'    },
+    { emoji:'🐸', name:'Frog',    sound:'ribbit',              file:'frog.mp3'    },
     { emoji:'🐑', name:'Sheep',   sound:'baaaa',               file:'sheep.wav'   },
     { emoji:'🐍', name:'Snake',   sound:'hiss',                file:'snake.mp3'   },
     { emoji:'🐝', name:'Bee',     sound:'buzz',                file:'bee.wav'     },
@@ -778,13 +780,13 @@ const ANIMAL_SOUNDS = {
     { emoji:'🐭', name:'Mouse',   sound:'squeak squeak',       file:'mouse.mp3'   },
     { emoji:'🐷', name:'Pig',     sound:'oink oink',           file:'pig.mp3'     },
     { emoji:'🐓', name:'Rooster', sound:'cock-a-doodle-doo',   file:'rooster.m4a' },
-    { emoji:'🐺', name:'Wolf',    sound:'howl',                file:'wolf.m4a'    },
+    { emoji:'🐺', name:'Wolf',    sound:'howl',                file:'wolf.wav'    },
   ],
   NL: [
     { emoji:'🐶', name:'Hond',    sound:'woef woef',   file:'dog.wav'     },
     { emoji:'🐱', name:'Kat',     sound:'miauw',        file:'cat.wav'     },
     { emoji:'🐮', name:'Koe',     sound:'moo',          file:'cow.wav'     },
-    { emoji:'🐸', name:'Kikker',  sound:'kwak kwak',    file:'frog.m4a'    },
+    { emoji:'🐸', name:'Kikker',  sound:'kwak kwak',    file:'frog.mp3'    },
     { emoji:'🐑', name:'Schaap',  sound:'bèhèhè',       file:'sheep.wav'   },
     { emoji:'🐍', name:'Slang',   sound:'sss',          file:'snake.mp3'   },
     { emoji:'🐝', name:'Bij',     sound:'bzzz',         file:'bee.wav'     },
@@ -799,7 +801,7 @@ const ANIMAL_SOUNDS = {
     { emoji:'🐭', name:'Muis',    sound:'piep piep',    file:'mouse.mp3'   },
     { emoji:'🐷', name:'Varken',  sound:'knor knor',    file:'pig.mp3'     },
     { emoji:'🐓', name:'Haan',    sound:'kukeleku',     file:'rooster.m4a' },
-    { emoji:'🐺', name:'Wolf',    sound:'huuu',         file:'wolf.m4a'    },
+    { emoji:'🐺', name:'Wolf',    sound:'huuu',         file:'wolf.wav'    },
   ],
 };
 
@@ -1240,39 +1242,41 @@ function goToInstructions() {
   data.forEach((instr, ii) => {
     const card = document.createElement('div');
     card.className = 'instruction-card';
-    const stepsHtml = instr.steps.map((step, si) => `
-      <div class="instr-step" id="step-${ii}-${si}">
-        <div class="step-num">${si+1}</div>
-        <div class="step-text">${step}</div>
-        <div class="step-check">✅</div>
-      </div>
+    const order = shuffle(instr.steps.map((_, si) => si));
+    const chipsHtml = order.map(si => `
+      <div class="instr-chip" id="chip-${ii}-${si}" onclick="tryInstrStep(${ii},${si},this)">${instr.steps[si]}</div>
     `).join('');
     card.innerHTML = `
       <div class="instruction-title">${instr.emoji} ${instr.title}</div>
-      <div class="instruction-steps">${stepsHtml}</div>
-      <button class="instr-btn" onclick="readInstructions(${ii},${instr.steps.length})">▶ ${currentLang==='RO'?'Citește':'Lees' === 'Lees' ? (currentLang==='NL'?'Lees':'Read') : 'Read'}</button>
+      <div class="instruction-solved" id="instr-solved-${ii}"></div>
+      <div class="instruction-pool" id="instr-pool-${ii}" data-next="0">${chipsHtml}</div>
     `;
     container.appendChild(card);
   });
   showScreen('screen-instructions');
 }
-function readInstructions(ii, total) {
-  // reset steps
-  for(let si=0; si<total; si++) {
-    const el = document.getElementById(`step-${ii}-${si}`);
-    if(el) el.classList.remove('done');
-  }
+// Tap-to-order game: steps render shuffled, child taps them in the correct
+// sequence (1, 2, 3…). A correct tap reads that step aloud and moves it into
+// the solved list in order; a wrong tap just shakes — no penalty.
+function tryInstrStep(ii, si, chip) {
   const instr = INSTRUCTIONS[currentLang][ii];
-  let si = 0;
-  function readNext() {
-    if (si >= total) { addStar(); showReward(total, total); return; }
-    const el = document.getElementById(`step-${ii}-${si}`);
-    if(el) el.classList.add('done');
-    const current = si;
-    si++;
-    speak(instr.steps[current], LANG_VOICE[currentLang], readNext);
+  const pool = document.getElementById(`instr-pool-${ii}`);
+  const next = parseInt(pool.dataset.next, 10);
+  if (si !== next) {
+    chip.classList.remove('shake'); void chip.offsetWidth; chip.classList.add('shake');
+    return;
   }
-  readNext();
+  chip.remove();
+  pool.dataset.next = String(next + 1);
+  const solved = document.getElementById(`instr-solved-${ii}`);
+  const row = document.createElement('div');
+  row.className = 'instr-step';
+  row.innerHTML = `<div class="step-num">${next+1}</div><div class="step-text">${instr.steps[si]}</div><div class="step-check">✅</div>`;
+  solved.appendChild(row);
+  const done = next + 1 >= instr.steps.length;
+  speak(instr.steps[si], LANG_VOICE[currentLang], () => {
+    if (done) { addStar(); showReward(instr.steps.length, instr.steps.length); }
+  });
 }
 
 // ======================== GAME ========================
@@ -1473,6 +1477,9 @@ const AUDIO_SLUGS = {
   'Giet het sap in een glas en drink!':'instr-juice-5',
   // Compound-word groeiers results (RO) — self-referential slugs
   'raft de cărți':'raft-carti','lăbuță de câine':'labuta-caine','lumânare de tort':'lumanare-tort','raze de soare':'raze-soare',
+  // Compound-word groeiers results (EN/NL) — slugs translated to Romanian, matching the WORDS convention
+  'butterfly':'fluture','fire truck':'masina-pompieri','bookshelf':'raft-carti',
+  'boekenplank':'raft-carti','hondenriem':'lesa-caine','vissenkom':'acvariu','appeltaart':'placinta-mere',
   // Compound-word slimmerds results — self-referential slugs
   'om de zăpadă':'compound-om-zapada','picătură de ploaie':'compound-picatura-ploaie','pahar de lapte':'compound-pahar-lapte',
   'snowman':'compound-snowman','starfish':'compound-starfish','waterfall':'compound-waterfall',
