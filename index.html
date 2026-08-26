@@ -600,7 +600,7 @@ const UI = {
     rewardTitle:'Bravo! 🎉',
     mouthDoneBtn:'✅ Gata! Am încercat!',
     effortRewardTitle:'Bravo pentru încercare! 💪', effortRewardMsg:'Ai încercat, și asta contează cel mai mult! Continuă tot așa!',
-    cats:{ animals:'🐾 Animale', fruits:'🍎 Fructe', colors:'🎨 Culori', body:'🫀 Corpul meu' },
+    cats:{ animals:'🐾 Animale', fruits:'🍎 Fructe', colors:'🎨 Culori', body:'👤 Corpul meu' },
     aiPrompt:(s,t)=>`Ești un asistent de logopedie pentru copii mici (2-7 ani). Copilul a obținut ${s} din ${t} corecte. Scrie o încurajare scurtă, caldă, în română. Maxim 2 propoziții scurte. Fără formatare.`
   },
   EN: {
@@ -622,7 +622,7 @@ const UI = {
     rewardTitle:'Great job! 🎉',
     mouthDoneBtn:'✅ Done! I tried it!',
     effortRewardTitle:'Great try! 💪', effortRewardMsg:'You gave it a go, and that’s what matters most! Keep it up!',
-    cats:{ animals:'🐾 Animals', fruits:'🍎 Fruits', colors:'🎨 Colors', body:'🫀 My Body' },
+    cats:{ animals:'🐾 Animals', fruits:'🍎 Fruits', colors:'🎨 Colors', body:'👤 My Body' },
     aiPrompt:(s,t)=>`You are a warm speech therapy assistant for young children (2-7). The child got ${s} of ${t} correct. Write a short, enthusiastic encouragement in English. Max 2 short sentences. No markdown.`
   },
   NL: {
@@ -644,7 +644,7 @@ const UI = {
     rewardTitle:'Goed gedaan! 🎉',
     mouthDoneBtn:'✅ Klaar! Ik heb het geprobeerd!',
     effortRewardTitle:'Goed geprobeerd! 💪', effortRewardMsg:'Je hebt het geprobeerd, en dat telt het meest! Ga zo door!',
-    cats:{ animals:'🐾 Dieren', fruits:'🍎 Fruit', colors:'🎨 Kleuren', body:'🫀 Mijn lichaam' },
+    cats:{ animals:'🐾 Dieren', fruits:'🍎 Fruit', colors:'🎨 Kleuren', body:'👤 Mijn lichaam' },
     aiPrompt:(s,t)=>`Je bent een warme logopedieassistent voor jonge kinderen (2-7 jaar). Het kind had ${s} van ${t} goed. Schrijf een korte, enthousiaste aanmoediging in het Nederlands. Max 2 korte zinnen. Geen opmaak.`
   }
 };
@@ -832,7 +832,7 @@ const SOUNDS = {
   ],
   NL: [
     { sound:'R', level:'groeiers', tipEmoji:'🐱', tip:'Maak je tong trillen achter in je keel, zoals een kat die spint.', words:[{word:'regen',emoji:'🌧️'},{word:'robot',emoji:'🤖'},{word:'rood',emoji:'🔴'}] },
-    { sound:'S', level:'groeiers', tipEmoji:'🐍', tip:'Tanden bij elkaar, blaas een dun straaltje lucht.', words:[{word:'ster',emoji:'⭐'},{word:'sok',emoji:'🧦'},{word:'zon',emoji:'☀️'}] },
+    { sound:'S', level:'groeiers', tipEmoji:'🐍', tip:'Tanden bij elkaar, blaas een dun straaltje lucht.', words:[{word:'ster',emoji:'⭐'},{word:'sok',emoji:'🧦'},{word:'sap',emoji:'🧃'}] },
     { sound:'G', level:'groeiers', tipEmoji:'🐸', tip:'Achterin je keel, maak een krasgeluid, zoals een kikker.', words:[{word:'geel',emoji:'🟡'},{word:'gras',emoji:'🌿'},{word:'groot',emoji:'🐘'}] },
     { sound:'SCH', level:'slimmerds', tipEmoji:'✨', tip:'S en dan snel G. Eerst sissen, dan krassen. Sch, sch, sch.', words:[{word:'school',emoji:'🏫'},{word:'schip',emoji:'🚢'},{word:'schoen',emoji:'👟'}] },
     { sound:'SL', level:'slimmerds', tipEmoji:'🐌', tip:'S en L snel na elkaar. Zoals een slak die glijdt.', words:[{word:'slak',emoji:'🐌'},{word:'sleutel',emoji:'🔑'},{word:'slee',emoji:'🛷'}] },
@@ -1447,7 +1447,7 @@ const AUDIO_SLUGS = {
   'whale':'whale','wheel':'wheel',
   // Dutch
   'regen':'regen','robot':'robot',
-  'ster':'ster','sok':'sok','zon':'zon',
+  'ster':'ster','sok':'sok','sap':'sap',
   'gras':'gras','groot':'groot',
   'school':'school','schip':'schip','schoen':'schoen',
   'slak':'slak','sleutel':'sleutel','slee':'slee',
