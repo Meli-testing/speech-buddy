@@ -1217,21 +1217,21 @@ function goToCompound() {
 }
 function checkCompound(btn, chosen, correct, index) {
   const item = currentCompoundItems[index];
-  btn.parentElement.querySelectorAll('.compound-opt').forEach(b => b.onclick = null);
-  const blank = document.getElementById('blank-'+index);
   const isCorrect = chosen === correct;
-  blank.textContent = chosen;
-  blank.style.color = isCorrect ? 'var(--correct)' : 'var(--wrong)';
-  blank.style.fontWeight = '800';
+  const blank = document.getElementById('blank-'+index);
   if (isCorrect) {
+    btn.parentElement.querySelectorAll('.compound-opt').forEach(b => b.onclick = null);
     btn.classList.add('correct');
+    blank.textContent = chosen;
+    blank.style.color = 'var(--correct)';
+    blank.style.fontWeight = '800';
     document.getElementById('result-'+index).textContent = item.result;
     document.getElementById('result-'+index).style.opacity = '1';
     addStar();
     speak(item.result, LANG_VOICE[currentLang]);
   } else {
+    btn.onclick = null;
     btn.classList.add('wrong');
-    btn.parentElement.querySelectorAll('.compound-opt').forEach(b => { if(b.textContent===correct) b.classList.add('correct'); });
   }
 }
 
@@ -1323,15 +1323,14 @@ function renderGameQuestion() {
   setTimeout(() => speak(correct, LANG_VOICE[currentLang]), 500);
 }
 function checkGameAnswer(chosen, correct, btn) {
-  document.querySelectorAll('.game-option').forEach(b=>b.onclick=null);
   if (chosen===correct) {
+    document.querySelectorAll('.game-option').forEach(b=>b.onclick=null);
     btn.classList.add('correct');
     addStar(); gameScore++;
     setTimeout(()=>{ gameIndex++; renderGameProgress(); renderGameQuestion(); }, 800);
   } else {
+    btn.onclick = null;
     btn.classList.add('wrong');
-    document.querySelectorAll('.game-option').forEach(b=>{ if(b.textContent===correct) b.classList.add('correct'); });
-    setTimeout(()=>{ gameIndex++; renderGameProgress(); renderGameQuestion(); }, 1300);
   }
 }
 function endGame() { showReward(gameScore, gameItems.length); }
