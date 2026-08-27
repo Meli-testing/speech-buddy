@@ -887,6 +887,23 @@ const COMPOUND = {
   },
 };
 
+// ======================== ANSWER FEEDBACK (spoken praise / retry) ========================
+const FEEDBACK = {
+  RO: { correct:['fb-bravo','fb-foarte-bine'], wrong:['fb-mai-incearca'] },
+  EN: { correct:[], wrong:[] },
+  NL: { correct:['fb-super','fb-goed-gedaan'], wrong:['fb-probeer'] },
+};
+function playFeedback(isCorrect, onEnded) {
+  const list = (FEEDBACK[currentLang] || {})[isCorrect ? 'correct' : 'wrong'] || [];
+  if (!list.length) { if (onEnded) onEnded(); return; }
+  if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+  const slug = list[Math.floor(Math.random() * list.length)];
+  const audio = new Audio(`/audio/${slug}-${currentLang.toLowerCase()}.mp3`);
+  currentAudio = audio;
+  if (onEnded) audio.addEventListener('ended', onEnded, { once: true });
+  audio.play().catch(() => { if (onEnded) onEnded(); });
+}
+
 // ======================== INSTRUCTIONS ========================
 const INSTRUCTIONS = {
   RO: [
@@ -1228,10 +1245,11 @@ function checkCompound(btn, chosen, correct, index) {
     document.getElementById('result-'+index).textContent = item.result;
     document.getElementById('result-'+index).style.opacity = '1';
     addStar();
-    speak(item.result, LANG_VOICE[currentLang]);
+    playFeedback(true, () => speak(item.result, LANG_VOICE[currentLang]));
   } else {
     btn.onclick = null;
     btn.classList.add('wrong');
+    playFeedback(false);
   }
 }
 
@@ -1327,10 +1345,12 @@ function checkGameAnswer(chosen, correct, btn) {
     document.querySelectorAll('.game-option').forEach(b=>b.onclick=null);
     btn.classList.add('correct');
     addStar(); gameScore++;
+    playFeedback(true);
     setTimeout(()=>{ gameIndex++; renderGameProgress(); renderGameQuestion(); }, 800);
   } else {
     btn.onclick = null;
     btn.classList.add('wrong');
+    playFeedback(false);
   }
 }
 function endGame() { showReward(gameScore, gameItems.length); }
