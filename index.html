@@ -950,6 +950,7 @@ function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   window.scrollTo(0,0);
+  saveState();
 }
 function selectLanguage(lang) {
   currentLang = lang;
@@ -1204,7 +1205,7 @@ function selectSound(index) {
 
 // ======================== COMPOUND WORDS ========================
 let currentCompoundItems = [];
-let compoundCorrectCount = 0;
+let compoundDone = [];
 function goToCompound() {
   const t = UI[currentLang];
   const data = COMPOUND[currentLang];
@@ -1215,7 +1216,7 @@ function goToCompound() {
   const container = document.getElementById('compound-exercise');
   container.innerHTML = '';
   currentCompoundItems = data.items.filter(item => visibleAtLevel(item.level));
-  compoundCorrectCount = 0;
+  compoundDone = new Array(currentCompoundItems.length).fill(false);
   currentCompoundItems.forEach((item, i) => {
     const div = document.createElement('div');
     div.className = 'compound-item';
@@ -1247,8 +1248,9 @@ function checkCompound(btn, chosen, correct, index) {
     document.getElementById('result-'+index).textContent = item.result;
     document.getElementById('result-'+index).style.opacity = '1';
     addStar();
-    compoundCorrectCount++;
-    const allDone = compoundCorrectCount >= currentCompoundItems.length;
+    compoundDone[index] = true;
+    const allDone = compoundDone.every(Boolean);
+    saveState();
     speak(item.result, LANG_VOICE[currentLang], allDone ? () => playFeedback(true) : null);
   } else {
     btn.onclick = null;
@@ -1320,6 +1322,7 @@ function renderGameProgress() {
   prog.innerHTML = gameItems.map((_,i) =>
     `<div class="progress-dot ${i<gameIndex?'done':i===gameIndex?'current':''}"></div>`
   ).join('');
+  saveState();
 }
 function renderGameQuestion() {
   if (gameIndex >= gameItems.length) { endGame(); return; }
@@ -1357,6 +1360,27 @@ function checkGameAnswer(chosen, correct, btn) {
   }
 }
 function endGame() { playFeedback(true); showReward(gameScore, gameItems.length); }
+function restoreCompoundDone(doneArr) {
+  const items = document.querySelectorAll('#compound-exercise .compound-item');
+  doneArr.forEach((done, i) => {
+    if (!done || !currentCompoundItems[i] || !items[i]) return;
+    const item = currentCompoundItems[i];
+    const div = items[i];
+    div.querySelectorAll('.compound-opt').forEach(b => {
+      b.onclick = null;
+      if (b.textContent === item.answer) b.classList.add('correct');
+    });
+    const blank = document.getElementById('blank-'+i);
+    blank.textContent = item.answer;
+    blank.style.color = 'var(--correct)';
+    blank.style.fontWeight = '800';
+    const result = document.getElementById('result-'+i);
+    result.textContent = item.result;
+    result.style.opacity = '1';
+  });
+  compoundDone = doneArr.slice();
+  saveState();
+}
 
 // ======================== REWARD ========================
 function showReward(score, total) {
@@ -1598,8 +1622,59 @@ function launchConfetti() {
 // ======================== UTILS ========================
 function shuffle(arr) { const a=[...arr]; for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]; } return a; }
 
+
+// ======================== SAVE / RESTORE PROGRESS ========================
+const STATE_KEY = 'speechBuddyState';
+function saveState() {
+  const active = document.querySelector('.screen.active');
+  const screen = active ? active.id : 'screen-lang';
+  const state = { lang: currentLang, level: currentLevel, stars: stars, screen: screen };
+  if (screen === 'screen-game') state.game = { items: gameItems, index: gameIndex, score: gameScore };
+  if (screen === 'screen-compound') state.compoundDone = compoundDone;
+  try { localStorage.setItem(STATE_KEY, JSON.stringify(state)); } catch(e) {}
+}
+function restoreState() {
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem(STATE_KEY)); } catch(e) {}
+  if (!saved || !saved.lang || !UI[saved.lang]) { updateLevelScreen(); return; }
+  currentLang = saved.lang;
+  currentLevel = (saved.level && LEVEL_RANK.hasOwnProperty(saved.level)) ? saved.level : 'groeiers';
+  stars = saved.stars || 0;
+  document.body.className = 'level-' + currentLevel;
+  document.querySelectorAll('.star-display').forEach(e => e.textContent = stars);
+  updateLevelScreen();
+  updateUI();
+  switch (saved.screen) {
+    case 'screen-level': showScreen('screen-level'); break;
+    case 'screen-home': showScreen('screen-home'); break;
+    case 'screen-cards': goToCards(); break;
+    case 'screen-mouth': goToMouth(); break;
+    case 'screen-animals': goToAnimals(); break;
+    case 'screen-sounds': goToSounds(); break;
+    case 'screen-instructions': goToInstructions(); break;
+    case 'screen-compound':
+      goToCompound();
+      if (saved.compoundDone) restoreCompoundDone(saved.compoundDone);
+      break;
+    case 'screen-game':
+      if (saved.game && saved.game.items && saved.game.items.length) {
+        gameItems = saved.game.items;
+        gameIndex = saved.game.index || 0;
+        gameScore = saved.game.score || 0;
+        renderGameProgress();
+        renderGameQuestion();
+        showScreen('screen-game');
+      } else {
+        showScreen('screen-home');
+      }
+      break;
+    default:
+      break;
+  }
+}
+
 // init
-updateLevelScreen();
+restoreState();
 </script>
 </body>
 </html>
