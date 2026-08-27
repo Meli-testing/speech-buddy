@@ -1204,6 +1204,7 @@ function selectSound(index) {
 
 // ======================== COMPOUND WORDS ========================
 let currentCompoundItems = [];
+let compoundCorrectCount = 0;
 function goToCompound() {
   const t = UI[currentLang];
   const data = COMPOUND[currentLang];
@@ -1214,6 +1215,7 @@ function goToCompound() {
   const container = document.getElementById('compound-exercise');
   container.innerHTML = '';
   currentCompoundItems = data.items.filter(item => visibleAtLevel(item.level));
+  compoundCorrectCount = 0;
   currentCompoundItems.forEach((item, i) => {
     const div = document.createElement('div');
     div.className = 'compound-item';
@@ -1245,7 +1247,9 @@ function checkCompound(btn, chosen, correct, index) {
     document.getElementById('result-'+index).textContent = item.result;
     document.getElementById('result-'+index).style.opacity = '1';
     addStar();
-    playFeedback(true, () => speak(item.result, LANG_VOICE[currentLang]));
+    compoundCorrectCount++;
+    const allDone = compoundCorrectCount >= currentCompoundItems.length;
+    speak(item.result, LANG_VOICE[currentLang], allDone ? () => playFeedback(true) : null);
   } else {
     btn.onclick = null;
     btn.classList.add('wrong');
@@ -1345,7 +1349,6 @@ function checkGameAnswer(chosen, correct, btn) {
     document.querySelectorAll('.game-option').forEach(b=>b.onclick=null);
     btn.classList.add('correct');
     addStar(); gameScore++;
-    playFeedback(true);
     setTimeout(()=>{ gameIndex++; renderGameProgress(); renderGameQuestion(); }, 800);
   } else {
     btn.onclick = null;
@@ -1353,7 +1356,7 @@ function checkGameAnswer(chosen, correct, btn) {
     playFeedback(false);
   }
 }
-function endGame() { showReward(gameScore, gameItems.length); }
+function endGame() { playFeedback(true); showReward(gameScore, gameItems.length); }
 
 // ======================== REWARD ========================
 function showReward(score, total) {
