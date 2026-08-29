@@ -343,7 +343,7 @@
   </div>
   <div class="lang-buttons">
     <button class="lang-btn ro" onclick="selectLanguage('RO')"><span class="lang-flag">🇷🇴</span> Română</button>
-    <button class="lang-btn en" onclick="selectLanguage('EN')"><span class="lang-flag">🇬🇧</span> English</button>
+    <button class="lang-btn en" onclick="selectLanguage('EN')"><span class="lang-flag">🌐</span> English</button>
     <button class="lang-btn nl" onclick="selectLanguage('NL')"><span class="lang-flag">🇧🇪</span> Nederlands</button>
   </div>
 </div>
@@ -520,7 +520,7 @@ let gameItems = [], gameIndex = 0, gameScore = 0;
 const LEVEL_RANK = { kleintjes:0, groeiers:1, slimmerds:2 };
 function visibleAtLevel(itemLevel) { return LEVEL_RANK[itemLevel] <= LEVEL_RANK[currentLevel]; }
 
-const LANG_VOICE = { RO:'ro-RO', EN:'en-GB', NL:'nl-NL' };
+const LANG_VOICE = { RO:'ro-RO', EN:'en', NL:'nl-NL' };
 
 // ======================== UI STRINGS ========================
 const UI = {
@@ -1521,7 +1521,7 @@ const AUDIO_SLUGS = {
   'Duw je lippen naar voren, als een trompet.':'mouth-elephant-trunk',
 };
 
-const LANG_CODE = { 'ro-RO':'ro', 'en-GB':'en', 'nl-NL':'nl' };
+const LANG_CODE = { 'ro-RO':'ro', 'en':'en', 'nl-NL':'nl' };
 
 function speak(text, lang, onEnded) {
   if (!text) return;

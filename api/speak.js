@@ -14,11 +14,11 @@ export default async function handler(req, res) {
 
   const VOICES = {
     'ro-RO': 'EXAVITQu4vr4xnSDxMaL',
-    'en-GB': 'EXAVITQu4vr4xnSDxMaL',
+    'en': 'EXAVITQu4vr4xnSDxMaL',
     'nl-NL': 'EXAVITQu4vr4xnSDxMaL',
   };
 
-  const voiceId = VOICES[lang] || VOICES['en-GB'];
+  const voiceId = VOICES[lang] || VOICES['en'];
   const langCode = lang ? lang.split('-')[0] : 'en';
 
   const response = await fetch(
