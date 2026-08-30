@@ -849,7 +849,7 @@ const COMPOUND = {
 // ======================== ANSWER FEEDBACK (spoken praise / retry) ========================
 const FEEDBACK = {
   RO: { correct:['fb-bravo','fb-foarte-bine'], wrong:['fb-mai-incearca'] },
-  EN: { correct:[], wrong:[] },
+  EN: { correct:['fb-great-job','fb-well-done'], wrong:['fb-try-again'] },
   NL: { correct:['fb-super','fb-goed-gedaan'], wrong:['fb-probeer'] },
 };
 function playFeedback(isCorrect, onEnded) {
@@ -1435,6 +1435,11 @@ const AUDIO_SLUGS = {
   'pară':'para','avocado':'avocado','mango':'mango','pepene galben':'pepene-galben','afine':'afine',
   'auriu':'auriu','argintiu':'argintiu','bej':'bej',
   'limbă':'limba','braț':'brat','unghie':'unghie',
+  // groeiers word-tier additions — English
+  'bear':'urs','monkey':'maimuta','tiger':'tigru','zebra':'zebra','snake':'sarpe',
+  'pear':'para','avocado':'avocado','mango':'mango','melon':'pepene-galben','blueberries':'afine',
+  'gold':'auriu','silver':'argintiu','beige':'bej',
+  'tongue':'limba','arm':'brat','nail':'unghie',
   // groeiers word-tier additions — Dutch ('tong' reuses the existing 'tong' slug from the NG sound card)
   'beer':'urs','aap':'maimuta','tijger':'tigru','zebra':'zebra','slang':'sarpe',
   'peer':'para','meloen':'pepene-galben','bosbessen':'afine',
