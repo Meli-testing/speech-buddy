@@ -1,0 +1,16 @@
+{
+  "name": "SpeechBuddy",
+  "short_name": "SpeechBuddy",
+  "description": "Jocuri de vorbire pentru copii, in RO / EN / NL",
+  "lang": "ro",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#FFF8ED",
+  "theme_color": "#FF7043",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

@@ -4,6 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>SpeechBuddy</title>
+  <meta name="theme-color" content="#FF7043">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" type="image/png" href="/icons/icon-192.png">
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="SpeechBuddy">
   <link href="https://fonts.bunny.net/css?family=baloo-2:400,600,700,800&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -1650,6 +1657,12 @@ function restoreState() {
 
 // init
 restoreState();
+</script>
+<script>
+  // PWA: inregistreaza service worker-ul (offline + instalare pe telefon)
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js').catch(() => {}); });
+  }
 </script>
 </body>
 </html>
