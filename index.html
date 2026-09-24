@@ -1123,9 +1123,9 @@ function speakAnimal(sound, i) {
     if (currentAudio) { currentAudio.pause(); currentAudio = null; }
     const audio = new Audio('/audio/' + animal.file);
     currentAudio = audio;
-    audio.play().catch(() => fallbackSpeak(sound, LANG_VOICE[currentLang]));
+    audio.play().catch(() => {});
   } else {
-    fallbackSpeak(sound, LANG_VOICE[currentLang]);
+    console.warn('Lipseste audio pentru sunetul:', sound);
   }
   setTimeout(() => card.classList.remove('active'), 1500);
 }
@@ -1548,45 +1548,14 @@ function speak(text, lang, onEnded) {
     const audio = new Audio(`/audio/${slug}-${langCode}.mp3`);
     currentAudio = audio;
     if (onEnded) audio.addEventListener('ended', onEnded, { once: true });
-    audio.play().catch(() => fallbackSpeak(text, lang, onEnded));
+    audio.play().catch(() => { if (onEnded) onEnded(); });
   } else {
-    // Fallback to browser speech for anything not in audio files (tips, instructions etc)
-    fallbackSpeak(text, lang, onEnded);
+    // Fara voce live: daca nu exista fisier audio, nu se aude nimic, dar jocul merge mai departe
+    console.warn('Lipseste audio pentru:', text);
+    if (onEnded) onEnded();
   }
 }
 
-// Browser fallback for tips, instructions, mouth exercises
-async function fallbackSpeak(text, lang, onEnded) {
-  if (!text) return;
-  if (currentAudio) { currentAudio.pause(); currentAudio = null; }
-
-  try {
-    const res = await fetch('/api/speak', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text, lang })
-    });
-    if (!res.ok) throw new Error('API error');
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    const audio = new Audio(url);
-    currentAudio = audio;
-    if (onEnded) audio.addEventListener('ended', onEnded, { once: true });
-    audio.play().catch(() => browserSpeak(text, lang, onEnded));
-  } catch(e) {
-    console.warn('ElevenLabs fallback to browser:', e);
-    browserSpeak(text, lang, onEnded);
-  }
-}
-
-function browserSpeak(text, lang, onEnded) {
-  if (!('speechSynthesis' in window)) { if (onEnded) onEnded(); return; }
-  window.speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = lang; u.rate = 0.8; u.pitch = 1.1;
-  if (onEnded) { u.onend = onEnded; u.onerror = onEnded; }
-  window.speechSynthesis.speak(u);
-}
 // ======================== CONFETTI ========================
 function launchConfetti() {
   const c = document.getElementById('confetti');
