@@ -310,6 +310,65 @@
     .confetti-container.show { display: block; }
     .confetto { position: absolute; top: -12px; border-radius: 2px; animation: fall linear forwards; }
     @keyframes fall { to { transform: translateY(110vh) rotate(720deg); opacity: 0; } }
+
+    /* ===== ZUZI DRESSED (image + SVG accessories) ===== */
+    .zuzi-dressed { display: block; margin: 0 auto; }
+    .zuzi-dressed svg { width: 100%; height: 100%; overflow: visible; display: block; filter: drop-shadow(0 8px 16px rgba(255,160,0,0.28)); }
+    .home-zuzi { width: 110px; height: 178px; cursor: pointer; margin-bottom: 6px; }
+    .zuzi-wiggle { animation: wiggle 0.6s ease; }
+    @keyframes wiggle { 0%,100%{transform:rotate(0)} 25%{transform:rotate(-7deg) scale(1.05)} 75%{transform:rotate(7deg) scale(1.05)} }
+
+    /* ===== STREAK CARD (home) ===== */
+    .streak-card { display: flex; align-items: center; gap: 12px; background: white; border-radius: var(--radius); box-shadow: var(--shadow); padding: 12px 16px; margin-bottom: 12px; border: 3px solid #FFCC80; }
+    .streak-flame { width: 48px; height: 56px; flex-shrink: 0; position: relative; }
+    .streak-flame svg { width: 100%; height: 100%; }
+    .streak-flame.off svg { filter: grayscale(1); opacity: 0.45; }
+    .streak-flame.on svg { animation: flicker 1.6s ease-in-out infinite; transform-origin: 50% 100%; }
+    @keyframes flicker { 0%,100%{transform:scale(1) rotate(0)} 50%{transform:scale(1.06,1.1) rotate(2deg)} }
+    .streak-num { position: absolute; left: 0; right: 0; bottom: 6px; text-align: center; font-weight: 800; font-size: 1.05rem; color: white; text-shadow: 0 1px 3px rgba(0,0,0,0.35); }
+    .streak-info { flex: 1; min-width: 0; }
+    .streak-title { font-weight: 800; font-size: 1.05rem; line-height: 1.2; }
+    .streak-sub { font-size: 0.8rem; color: var(--text-light); line-height: 1.3; }
+    .week-dots { display: flex; gap: 5px; margin-top: 6px; }
+    .week-dot { flex: 1; max-width: 32px; text-align: center; font-size: 0.66rem; font-weight: 700; color: var(--text-light); }
+    .week-dot i { display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; margin: 0 auto 1px; border-radius: 50%; background: #F1F1F1; font-style: normal; font-size: 0.8rem; }
+    .week-dot.done i { background: linear-gradient(150deg,#FFB74D,#FF7043); color: white; }
+    .week-dot.today i { box-shadow: 0 0 0 3px #FFD54F; }
+    .week-dot.future { opacity: 0.45; }
+
+    /* ===== SHOP BUTTON (home) ===== */
+    .shop-btn { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 16px; margin-bottom: 16px; border: none; border-radius: var(--radius); background: linear-gradient(120deg, #BA68C8, #7E57C2); color: white; font-family: 'Baloo 2', cursive; text-align: left; cursor: pointer; box-shadow: 0 6px 18px rgba(126,87,194,0.35); transition: transform 0.2s; }
+    .shop-btn:hover { transform: translateY(-3px); }
+    .shop-btn .shop-ic { width: 48px; height: 48px; border-radius: 14px; background: rgba(255,255,255,0.22); display: flex; align-items: center; justify-content: center; font-size: 1.6rem; flex-shrink: 0; }
+    .shop-btn .shop-t { font-weight: 800; font-size: 1.05rem; line-height: 1.2; }
+    .shop-btn .shop-s { font-size: 0.8rem; opacity: 0.92; }
+
+    /* ===== SHOP SCREEN ===== */
+    #screen-shop { background: linear-gradient(150deg, #FFE58F 0%, #FFF8E1 100%); }
+    .shop-stage { background: radial-gradient(circle at 50% 60%, #FFFFFF 0%, #FFF3C4 70%); border-radius: 28px; box-shadow: var(--shadow); padding: 10px 12px 14px; margin-bottom: 14px; text-align: center; }
+    .shop-zuzi { width: 150px; height: 242px; }
+    .shop-item-name { font-weight: 800; font-size: 1.1rem; min-height: 1.5em; }
+    .shop-action { margin-top: 6px; width: 100%; padding: 12px; border: none; border-radius: 16px; font-family: 'Baloo 2', cursive; font-size: 1rem; font-weight: 800; cursor: pointer; background: var(--primary); color: white; transition: all 0.2s; }
+    .shop-action.wear { background: var(--secondary); }
+    .shop-action.off { background: #B0BEC5; }
+    .shop-action:disabled { background: #ECEFF1; color: var(--text-light); cursor: default; }
+    .need-bar { height: 8px; background: #ECEFF1; border-radius: 6px; overflow: hidden; margin-top: 6px; }
+    .need-bar span { display: block; height: 100%; background: linear-gradient(90deg,#FFD54F,#FFB300); border-radius: 6px; }
+    .shop-slot-title { font-weight: 800; font-size: 0.95rem; margin: 6px 2px 8px; color: var(--text); }
+    .shop-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 10px; }
+    .shop-tile { position: relative; background: white; border: 3px solid transparent; border-radius: 18px; padding: 8px 4px 6px; text-align: center; cursor: pointer; box-shadow: var(--shadow); transition: all 0.2s; font-family: 'Baloo 2', cursive; }
+    .shop-tile:hover { transform: scale(1.04); }
+    .shop-tile.sel { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(255,112,67,0.2); }
+    .shop-tile.worn { border-color: var(--secondary); }
+    .shop-tile svg { width: 100%; height: 56px; display: block; overflow: visible; }
+    .shop-tile.locked svg { opacity: 0.55; }
+    .shop-price { display: inline-block; margin-top: 4px; padding: 1px 8px; border-radius: 12px; background: #FFF8E1; font-size: 0.8rem; font-weight: 800; color: #5D4037; }
+    .shop-tile.owned .shop-price { background: #E0F7F4; color: #00A382; }
+    .shop-tile .worn-tag { position: absolute; top: -8px; right: -6px; background: var(--secondary); color: white; border-radius: 12px; font-size: 0.7rem; font-weight: 800; padding: 1px 7px; }
+
+    /* ===== TOAST ===== */
+    .sb-toast { position: fixed; left: 50%; top: 14px; transform: translate(-50%, -140%); z-index: 1100; max-width: 92%; width: max-content; background: white; border: 3px solid #FFB74D; border-radius: 20px; box-shadow: var(--shadow-lg); padding: 8px 16px; font-weight: 800; font-size: 0.98rem; text-align: center; transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1); pointer-events: none; }
+    .sb-toast.show { transform: translate(-50%, 0); }
   </style>
 </head>
 <body>
@@ -407,10 +466,16 @@
     </div>
   </div>
   <div class="home-welcome">
-<img src="/images/zuzi-mascot.png" alt="Zuzi" class="home-mascot floating" style="height:90px;width:auto;display:block;margin:0 auto 10px">
+    <div class="zuzi-dressed home-zuzi floating" id="home-zuzi" onclick="goToShop()" role="button" aria-label="Zuzi"></div>
     <div class="welcome-text" id="home-welcome-text">Bună ziua! 👋</div>
     <div class="welcome-sub"  id="home-welcome-sub">Ce facem azi?</div>
   </div>
+  <div class="streak-card" id="streak-card"></div>
+  <button class="shop-btn" onclick="goToShop()">
+    <span class="shop-ic">🛍️</span>
+    <span style="flex:1"><span class="shop-t" id="shop-btn-title">Magazinul lui Zuzi</span><br><span class="shop-s" id="shop-btn-sub"></span></span>
+    <span style="font-size:1.3rem">→</span>
+  </button>
   <div class="home-cards" id="home-cards-container"></div>
 </div>
 
@@ -504,6 +569,24 @@
   <div class="game-question"  id="game-question"></div>
   <div class="game-options"   id="game-options"></div>
 </div>
+
+<!-- ===== SCREEN: ZUZI SHOP ===== -->
+<div id="screen-shop" class="screen">
+  <div class="app-header">
+    <button class="back-btn" onclick="goHome()">← <span class="back-text">Acasă</span></button>
+    <div class="stars-badge">⭐ <span class="star-display">0</span></div>
+  </div>
+  <div class="section-title" id="shop-title">Magazinul lui Zuzi</div>
+  <div class="section-sub"   id="shop-sub"></div>
+  <div class="shop-stage">
+    <div class="zuzi-dressed shop-zuzi" id="shop-zuzi"></div>
+    <div class="shop-item-name" id="shop-item-name"></div>
+    <div id="shop-action-wrap"></div>
+  </div>
+  <div id="shop-items"></div>
+</div>
+
+<div class="sb-toast" id="sb-toast"></div>
 
 <!-- ===== REWARD ===== -->
 <div class="reward-overlay" id="reward-overlay">
@@ -917,6 +1000,7 @@ function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   window.scrollTo(0,0);
+  if (id === 'screen-home') renderHomeRewards();
   saveState();
 }
 function selectLanguage(lang) {
@@ -967,6 +1051,7 @@ function updateUI() {
   lb.className = 'level-badge ' + currentLevel;
 
   renderHomeCards();
+  renderHomeRewards();
   updateLevelScreen();
 }
 
@@ -1013,7 +1098,304 @@ function navTo(id) {
 function addStar() {
   stars++;
   document.querySelectorAll('.star-display').forEach(e => e.textContent = stars);
+  registerPractice();
+  saveState();
 }
+
+// ======================== STREAK + ZUZI SHOP ========================
+// Streak = zile consecutive in care copilul a castigat macar o steluta.
+// Magazin = steluțele se cheltuie pe accesorii SVG pentru Zuzi (placeholder, fara imagini generate).
+// Frames: HEAD = top of head (tilted 14°), FACE = between the eyes, NECK = collar tag.
+const ZF = {
+  head: 'translate(160 60) rotate(14)',
+  face: 'translate(138 137) rotate(16)',
+  neck: 'translate(112 228) rotate(8)',
+};
+const OL = 'stroke="#37474F" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"';
+const ZUZI_ITEMS = [
+  // ---- HEAD ----
+  { id:'bow', slot:'head', price:10, box:[40,5,100,90],
+    svg:`<g transform="translate(88 48) rotate(-22)">
+      <path d="M0 0 L-30 -18 Q-38 0 -30 18 Z" fill="#F06292" ${OL}/>
+      <path d="M0 0 L30 -18 Q38 0 30 18 Z" fill="#F06292" ${OL}/>
+      <path d="M-24 -8 Q-28 0 -24 8 M24 -8 Q28 0 24 8" fill="none" stroke="#F8BBD0" stroke-width="3" stroke-linecap="round"/>
+      <circle r="8" fill="#EC407A" ${OL}/></g>` },
+  { id:'cap', slot:'head', price:15, box:[70,-40,190,120],
+    svg:`<g transform="${ZF.head}">
+      <path d="M-62 4 Q-62 -62 0 -62 Q62 -62 62 4 Z" fill="#42A5F5" ${OL}/>
+      <path d="M0 -62 L0 4" stroke="#1E88E5" stroke-width="3"/>
+      <path d="M30 2 Q80 -6 104 12 Q70 22 30 14 Z" fill="#1E88E5" ${OL}/>
+      <circle cx="0" cy="-63" r="7" fill="#FFD54F" ${OL}/>
+      <circle cx="-30" cy="-26" r="10" fill="#FFD54F" stroke="#FFB300" stroke-width="2"/></g>` },
+  { id:'flowers', slot:'head', price:20, box:[60,-10,200,90],
+    svg:`<g transform="${ZF.head}">
+      <path d="M-80 14 Q0 -24 80 14" fill="none" stroke="#66BB6A" stroke-width="7" stroke-linecap="round"/>
+      ${[[-72,10,'#F06292'],[-44,-2,'#FFD54F'],[-14,-8,'#BA68C8'],[16,-8,'#FF7043'],[46,-2,'#42A5F5'],[74,10,'#F06292']].map(([x,y,c])=>
+        `<g transform="translate(${x} ${y})">${[0,72,144,216,288].map(a=>`<ellipse cx="0" cy="-9" rx="7" ry="9" fill="${c}" stroke="#37474F" stroke-width="2" transform="rotate(${a})"/>`).join('')}<circle r="5" fill="#FFF59D" stroke="#37474F" stroke-width="2"/></g>`).join('')}</g>` },
+  { id:'tophat', slot:'head', price:25, box:[70,-90,190,160],
+    svg:`<g transform="${ZF.head}">
+      <ellipse cx="0" cy="0" rx="72" ry="14" fill="#7E57C2" ${OL}/>
+      <path d="M-44 -4 L-40 -100 Q0 -110 40 -100 L44 -4 Q0 6 -44 -4 Z" fill="#7E57C2" ${OL}/>
+      <path d="M-43 -24 Q0 -16 43 -24 L42 -42 Q0 -34 -42 -42 Z" fill="#FF7043" ${OL}/>
+      <path d="M-30 -92 L-28 -54" stroke="#9575CD" stroke-width="6" stroke-linecap="round"/></g>` },
+  { id:'wizard', slot:'head', price:35, box:[60,-130,200,200],
+    svg:`<g transform="${ZF.head}">
+      <path d="M-66 6 Q-20 -60 10 -150 Q24 -80 66 6 Q0 20 -66 6 Z" fill="#5C6BC0" ${OL}/>
+      <path d="M-80 6 Q0 26 80 6 Q0 -10 -80 6 Z" fill="#3949AB" ${OL}/>
+      <path d="M-14 -60 l4 9 10 1 -8 6 3 10 -9 -5 -9 5 3 -10 -8 -6 10 -1 Z" fill="#FFD54F" stroke="#F9A825" stroke-width="1.5"/>
+      <path d="M18 -26 l3 6 7 1 -5 4 2 7 -7 -4 -6 4 2 -7 -5 -4 7 -1 Z" fill="#FFD54F" stroke="#F9A825" stroke-width="1.5"/>
+      <circle cx="-30" cy="-14" r="4" fill="#FFF59D"/><circle cx="4" cy="-104" r="3.5" fill="#FFF59D"/></g>` },
+  { id:'crown', slot:'head', price:50, box:[70,-70,190,140],
+    svg:`<g transform="${ZF.head}">
+      <path d="M-58 4 L-64 -58 L-30 -26 L0 -70 L30 -26 L64 -58 L58 4 Q0 14 -58 4 Z" fill="#FFD54F" ${OL}/>
+      <path d="M-58 -8 Q0 2 58 -8" fill="none" stroke="#FFB300" stroke-width="4"/>
+      <circle cx="-64" cy="-60" r="7" fill="#FFF59D" ${OL}/><circle cx="0" cy="-72" r="8" fill="#FFF59D" ${OL}/><circle cx="64" cy="-60" r="7" fill="#FFF59D" ${OL}/>
+      <circle cx="-28" cy="-10" r="7" fill="#EF5350" ${OL}/><circle cx="0" cy="-8" r="8" fill="#26C6A2" ${OL}/><circle cx="28" cy="-10" r="7" fill="#42A5F5" ${OL}/></g>` },
+  // ---- FACE ----
+  { id:'glasses', slot:'face', price:10, box:[50,90,180,100],
+    svg:`<g transform="${ZF.face}">
+      <circle cx="-42" cy="0" r="30" fill="rgba(255,255,255,0.18)" stroke="#E64A19" stroke-width="6"/>
+      <circle cx="42" cy="0" r="30" fill="rgba(255,255,255,0.18)" stroke="#E64A19" stroke-width="6"/>
+      <path d="M-12 -4 Q0 -12 12 -4" fill="none" stroke="#E64A19" stroke-width="6" stroke-linecap="round"/>
+      <path d="M-71 -4 L-88 -10 M71 -4 L88 -10" stroke="#E64A19" stroke-width="6" stroke-linecap="round"/></g>` },
+  { id:'hearts', slot:'face', price:20, box:[50,85,180,110],
+    svg:`<g transform="${ZF.face}">
+      ${[-42,42].map(x=>`<path transform="translate(${x} 2)" d="M0 26 C-40 0 -38 -30 -16 -30 C-6 -30 0 -22 0 -16 C0 -22 6 -30 16 -30 C38 -30 40 0 0 26 Z" fill="#EC407A" fill-opacity="0.9" ${OL}/>`).join('')}
+      <path d="M-16 -10 Q0 -18 16 -10" fill="none" stroke="#37474F" stroke-width="4" stroke-linecap="round"/>
+      <path d="M-50 -14 Q-46 -20 -40 -18 M32 -14 Q36 -20 42 -18" stroke="white" stroke-width="3" fill="none" stroke-linecap="round"/></g>` },
+  { id:'stars', slot:'face', price:30, box:[45,80,190,115],
+    svg:`<g transform="${ZF.face}">
+      ${[-42,42].map(x=>`<path transform="translate(${x} 2)" d="M0 -36 L10 -12 36 -11 16 6 23 32 0 17 -23 32 -16 6 -36 -11 -10 -12 Z" fill="#FFD54F" fill-opacity="0.92" ${OL}/>`).join('')}
+      <path d="M-12 -6 Q0 -14 12 -6" fill="none" stroke="#37474F" stroke-width="4" stroke-linecap="round"/></g>` },
+  // ---- NECK ----
+  { id:'bowtie', slot:'neck', price:15, box:[70,195,85,65],
+    svg:`<g transform="${ZF.neck}">
+      <path d="M0 0 L-30 -16 Q-36 0 -30 16 Z" fill="#EF5350" ${OL}/>
+      <path d="M0 0 L30 -16 Q36 0 30 16 Z" fill="#EF5350" ${OL}/>
+      <circle cx="-18" cy="-4" r="3" fill="white"/><circle cx="18" cy="5" r="3" fill="white"/>
+      <rect x="-8" y="-9" width="16" height="18" rx="5" fill="#C62828" ${OL}/></g>` },
+  { id:'scarf', slot:'neck', price:25, box:[55,190,160,120],
+    svg:`<g>
+      <path d="M68 206 Q125 236 196 222 L200 244 Q126 262 64 228 Z" fill="#FF7043" ${OL}/>
+      <path d="M92 230 L80 294 L104 298 L112 238 Z" fill="#FF7043" ${OL}/>
+      <path d="M84 272 L106 276 M82 284 L104 288" stroke="#FFE0B2" stroke-width="4" stroke-linecap="round"/>
+      <path d="M96 226 L100 244 M130 232 L132 250 M164 230 L166 248" stroke="#FFE0B2" stroke-width="4" stroke-linecap="round"/></g>` },
+  { id:'medal', slot:'neck', price:40, box:[70,200,90,120],
+    svg:`<g>
+      <path d="M96 224 L106 268 L118 268 L128 226 Z" fill="#42A5F5" ${OL}/>
+      <circle cx="112" cy="284" r="22" fill="#FFD54F" ${OL}/>
+      <circle cx="112" cy="284" r="14" fill="none" stroke="#FFB300" stroke-width="3"/>
+      <path d="M112 274 l3 7 7 0 -5 5 2 7 -7 -4 -7 4 2 -7 -5 -5 7 0 Z" fill="#FFB300"/></g>` },
+];
+
+// Bonus de steluțe la anumite serii de zile (apoi la fiecare 30 de zile)
+const STREAK_BONUS = { 3:3, 7:5, 14:10, 30:20 };
+function streakBonus(n) { return STREAK_BONUS[n] || (n > 30 && n % 30 === 0 ? 20 : 0); }
+
+function roDays(n) { const r = n % 100; return n === 1 ? '1 zi' : (n >= 20 && (r === 0 || r >= 20) ? n + ' de zile' : n + ' zile'); }
+const REWARD_UI = {
+  RO: {
+    streakTitle: n => n ? `${roDays(n)} la rând!` : 'Aprinde focul!',
+    streakDone: 'Ai exersat azi. Bravo! 🎉',
+    streakTodo: 'Exersează azi ca focul să rămână aprins!',
+    streakStart: 'Câștigă o steluță ca să începi seria.',
+    week: ['L','Ma','Mi','J','V','S','D'],
+    dayToast: n => n === 1 ? '🔥 Ai început o serie nouă!' : `🔥 ${roDays(n)} la rând! Bravo!`,
+    bonusToast: (n,b) => `🔥 ${roDays(n)} la rând! +${b} ⭐ bonus!`,
+    shopBtn: 'Magazinul lui Zuzi', shopBtnSub: 'Îmbrac-o pe Zuzi cu steluțele tale',
+    shopSub: 'Atinge un accesoriu ca să-l încerci pe Zuzi!',
+    slots: { head:'🎩 Pe cap', face:'👓 Ochelari', neck:'🎀 La gât' },
+    buy: p => `Cumpără pentru ⭐ ${p}`, wear: 'Pune-i-l lui Zuzi ✨', takeOff: 'Scoate-l', need: n => `Mai ai nevoie de ${n} ⭐`,
+    pick: 'Alege un accesoriu de mai jos', owned: '✓', wearing: 'Poartă', bought: 'Super! Zuzi arată grozav! 🎉',
+    items: { bow:'Fundiță', cap:'Șapcă', flowers:'Coroniță de flori', tophat:'Joben', wizard:'Pălărie de vrăjitor', crown:'Coroană', glasses:'Ochelari', hearts:'Ochelari inimioare', stars:'Ochelari steluțe', bowtie:'Papion', scarf:'Fular', medal:'Medalie' },
+  },
+  EN: {
+    streakTitle: n => n ? `${n} day${n===1?'':'s'} in a row!` : 'Light the fire!',
+    streakDone: 'You practised today. Great job! 🎉',
+    streakTodo: 'Practise today to keep the fire going!',
+    streakStart: 'Earn a star to start your streak.',
+    week: ['M','T','W','T','F','S','S'],
+    dayToast: n => n === 1 ? '🔥 You started a new streak!' : `🔥 ${n} days in a row! Well done!`,
+    bonusToast: (n,b) => `🔥 ${n} days in a row! +${b} ⭐ bonus!`,
+    shopBtn: "Zuzi's Shop", shopBtnSub: 'Dress up Zuzi with your stars',
+    shopSub: 'Tap an item to try it on Zuzi!',
+    slots: { head:'🎩 Hats', face:'👓 Glasses', neck:'🎀 Neck' },
+    buy: p => `Buy for ⭐ ${p}`, wear: 'Put it on Zuzi ✨', takeOff: 'Take it off', need: n => `You need ${n} more ⭐`,
+    pick: 'Pick an item below', owned: '✓', wearing: 'Wearing', bought: 'Yay! Zuzi looks great! 🎉',
+    items: { bow:'Bow', cap:'Cap', flowers:'Flower crown', tophat:'Top hat', wizard:'Wizard hat', crown:'Crown', glasses:'Glasses', hearts:'Heart glasses', stars:'Star glasses', bowtie:'Bow tie', scarf:'Scarf', medal:'Medal' },
+  },
+  NL: {
+    streakTitle: n => n ? `${n} dag${n===1?'':'en'} op rij!` : 'Steek het vuurtje aan!',
+    streakDone: 'Je hebt vandaag geoefend. Goed zo! 🎉',
+    streakTodo: 'Oefen vandaag, dan blijft het vuurtje branden!',
+    streakStart: 'Verdien een ster om je reeks te starten.',
+    week: ['ma','di','wo','do','vr','za','zo'],
+    dayToast: n => n === 1 ? '🔥 Je bent een nieuwe reeks begonnen!' : `🔥 ${n} dagen op rij! Goed zo!`,
+    bonusToast: (n,b) => `🔥 ${n} dagen op rij! +${b} ⭐ bonus!`,
+    shopBtn: 'De winkel van Zuzi', shopBtnSub: 'Kleed Zuzi aan met je sterren',
+    shopSub: 'Tik op iets om het bij Zuzi te passen!',
+    slots: { head:'🎩 Hoedjes', face:'👓 Brillen', neck:'🎀 Hals' },
+    buy: p => `Koop voor ⭐ ${p}`, wear: 'Doe het Zuzi aan ✨', takeOff: 'Doe het uit', need: n => `Je hebt nog ${n} ⭐ nodig`,
+    pick: 'Kies iets hieronder', owned: '✓', wearing: 'Draagt', bought: 'Joepie! Zuzi ziet er top uit! 🎉',
+    items: { bow:'Strik', cap:'Pet', flowers:'Bloemenkrans', tophat:'Hoge hoed', wizard:'Tovenaarshoed', crown:'Kroon', glasses:'Bril', hearts:'Hartjesbril', stars:'Sterrenbril', bowtie:'Vlinderdas', scarf:'Sjaal', medal:'Medaille' },
+  },
+};
+function RU() { return REWARD_UI[currentLang] || REWARD_UI.RO; }
+
+const REWARDS_KEY = 'speechBuddyRewards';
+let rewards = { streak:0, best:0, lastDay:null, days:[], owned:[], equipped:{} };
+function loadRewards() {
+  try { const r = JSON.parse(localStorage.getItem(REWARDS_KEY)); if (r) rewards = Object.assign(rewards, r); } catch(e) {}
+  if (!Array.isArray(rewards.days)) rewards.days = [];
+  if (!Array.isArray(rewards.owned)) rewards.owned = [];
+  if (!rewards.equipped || typeof rewards.equipped !== 'object') rewards.equipped = {};
+}
+function saveRewards() { try { localStorage.setItem(REWARDS_KEY, JSON.stringify(rewards)); } catch(e) {} }
+
+function dayKey(d) { d = d || new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+function dayOffset(n) { const d = new Date(); d.setHours(12,0,0,0); d.setDate(d.getDate() + n); return dayKey(d); }
+function liveStreak() { return (rewards.lastDay === dayOffset(0) || rewards.lastDay === dayOffset(-1)) ? rewards.streak : 0; }
+
+// Apelat la fiecare steluta castigata; conteaza doar prima din zi.
+function registerPractice() {
+  const today = dayOffset(0);
+  if (rewards.lastDay === today) return;
+  rewards.streak = (rewards.lastDay === dayOffset(-1)) ? rewards.streak + 1 : 1;
+  rewards.lastDay = today;
+  rewards.days = rewards.days.filter(d => d !== today).concat(today).slice(-60);
+  rewards.best = Math.max(rewards.best || 0, rewards.streak);
+  saveRewards();
+  const bonus = streakBonus(rewards.streak);
+  if (bonus) {
+    stars += bonus;
+    document.querySelectorAll('.star-display').forEach(e => e.textContent = stars);
+    showToast(RU().bonusToast(rewards.streak, bonus), 3200);
+  } else {
+    showToast(RU().dayToast(rewards.streak));
+  }
+  renderStreak();
+}
+
+let toastTimer = null;
+function showToast(msg, ms) {
+  const el = document.getElementById('sb-toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), ms || 2400);
+}
+
+const FLAME_SVG = `<svg viewBox="0 0 48 56" aria-hidden="true">
+  <path d="M24 2 C28 14 42 20 42 36 C42 47 34 54 24 54 C14 54 6 47 6 36 C6 26 13 22 15 12 C19 18 20 22 22 24 C24 16 22 8 24 2 Z" fill="#FF7043" stroke="#E64A19" stroke-width="2"/>
+  <path d="M24 22 C27 30 34 33 34 41 C34 48 29 52 24 52 C19 52 14 48 14 41 C14 35 19 33 20 27 C22 31 23 32 24 34 C25 30 24 26 24 22 Z" fill="#FFD54F"/></svg>`;
+
+function renderStreak() {
+  const el = document.getElementById('streak-card');
+  if (!el) return;
+  const u = RU(), n = liveStreak(), doneToday = rewards.lastDay === dayOffset(0);
+  const now = new Date(); const dow = (now.getDay() + 6) % 7; // 0 = luni
+  let dots = '';
+  for (let i = 0; i < 7; i++) {
+    const k = dayOffset(i - dow), done = rewards.days.includes(k);
+    const cls = ['week-dot', done ? 'done' : '', i === dow ? 'today' : '', i > dow ? 'future' : ''].join(' ');
+    dots += `<div class="${cls}"><i>${done ? '★' : ''}</i>${u.week[i]}</div>`;
+  }
+  el.innerHTML = `
+    <div class="streak-flame ${doneToday ? 'on' : 'off'}">${FLAME_SVG}<div class="streak-num">${n}</div></div>
+    <div class="streak-info">
+      <div class="streak-title">${u.streakTitle(n)}</div>
+      <div class="streak-sub">${doneToday ? u.streakDone : (n ? u.streakTodo : u.streakStart)}</div>
+      <div class="week-dots">${dots}</div>
+    </div>`;
+}
+
+// Zuzi + accesorii intr-un singur SVG (viewBox cu loc deasupra pentru palarii)
+function zuziSVG(equipped) {
+  const layers = ['neck','face','head'].map(slot => {
+    const it = ZUZI_ITEMS.find(i => i.id === equipped[slot]);
+    return it ? it.svg : '';
+  }).join('');
+  return `<svg viewBox="0 -100 290 468" role="img" aria-label="Zuzi"><image href="/images/zuzi-mascot.png" width="290" height="368"/>${layers}</svg>`;
+}
+function renderZuzi(id, equipped) { const el = document.getElementById(id); if (el) el.innerHTML = zuziSVG(equipped || rewards.equipped); }
+
+function renderHomeRewards() {
+  const u = RU();
+  renderZuzi('home-zuzi');
+  renderStreak();
+  setText('shop-btn-title', u.shopBtn);
+  setText('shop-btn-sub', u.shopBtnSub);
+}
+
+// ---- SHOP ----
+let shopSel = null;
+function goToShop() {
+  shopSel = null;
+  renderShop();
+  showScreen('screen-shop');
+}
+function renderShop() {
+  const u = RU();
+  setText('shop-title', u.shopBtn);
+  setText('shop-sub', u.shopSub);
+  const sel = ZUZI_ITEMS.find(i => i.id === shopSel);
+  // Previzualizare: ce poarta Zuzi + articolul selectat (proba)
+  const preview = Object.assign({}, rewards.equipped);
+  if (sel) preview[sel.slot] = sel.id;
+  renderZuzi('shop-zuzi', preview);
+  setText('shop-item-name', sel ? u.items[sel.id] : u.pick);
+
+  const wrap = document.getElementById('shop-action-wrap');
+  if (!sel) { wrap.innerHTML = ''; }
+  else if (rewards.owned.includes(sel.id)) {
+    const worn = rewards.equipped[sel.slot] === sel.id;
+    wrap.innerHTML = `<button class="shop-action ${worn ? 'off' : 'wear'}" onclick="toggleWear('${sel.id}')">${worn ? u.takeOff : u.wear}</button>`;
+  } else if (stars >= sel.price) {
+    wrap.innerHTML = `<button class="shop-action" onclick="buyItem('${sel.id}')">${u.buy(sel.price)}</button>`;
+  } else {
+    const pct = Math.round(stars / sel.price * 100);
+    wrap.innerHTML = `<button class="shop-action" disabled>${u.need(sel.price - stars)}</button><div class="need-bar"><span style="width:${pct}%"></span></div>`;
+  }
+
+  let html = '';
+  ['head','face','neck'].forEach(slot => {
+    html += `<div class="shop-slot-title">${u.slots[slot]}</div><div class="shop-grid">`;
+    ZUZI_ITEMS.filter(i => i.slot === slot).sort((a,b) => a.price - b.price).forEach(it => {
+      const owned = rewards.owned.includes(it.id), worn = rewards.equipped[slot] === it.id;
+      const cls = ['shop-tile', owned ? 'owned' : (stars < it.price ? 'locked' : ''), worn ? 'worn' : '', shopSel === it.id ? 'sel' : ''].join(' ');
+      html += `<button class="${cls}" onclick="selectShopItem('${it.id}')" aria-label="${u.items[it.id]}">
+        ${worn ? `<span class="worn-tag">${u.wearing}</span>` : ''}
+        <svg viewBox="${it.box.join(' ')}">${it.svg}</svg>
+        <span class="shop-price">${owned ? u.owned : '⭐ ' + it.price}</span></button>`;
+    });
+    html += '</div>';
+  });
+  document.getElementById('shop-items').innerHTML = html;
+}
+function selectShopItem(id) { shopSel = id; renderShop(); wiggleZuzi(); }
+function wiggleZuzi() {
+  const z = document.getElementById('shop-zuzi');
+  z.classList.remove('zuzi-wiggle'); void z.offsetWidth; z.classList.add('zuzi-wiggle');
+}
+function buyItem(id) {
+  const it = ZUZI_ITEMS.find(i => i.id === id);
+  if (!it || rewards.owned.includes(id) || stars < it.price) return;
+  stars -= it.price;
+  document.querySelectorAll('.star-display').forEach(e => e.textContent = stars);
+  rewards.owned.push(id);
+  rewards.equipped[it.slot] = id;
+  saveRewards(); saveState();
+  renderShop(); wiggleZuzi(); launchConfetti();
+  showToast(RU().bought);
+}
+function toggleWear(id) {
+  const it = ZUZI_ITEMS.find(i => i.id === id);
+  if (!it || !rewards.owned.includes(id)) return;
+  if (rewards.equipped[it.slot] === id) delete rewards.equipped[it.slot];
+  else rewards.equipped[it.slot] = id;
+  saveRewards(); renderShop(); wiggleZuzi();
+}
+
 
 // ======================== WORD CARDS ========================
 let currentCategory = 'animals';
@@ -1603,6 +1985,7 @@ function restoreState() {
     case 'screen-animals': goToAnimals(); break;
     case 'screen-sounds': goToSounds(); break;
     case 'screen-instructions': goToInstructions(); break;
+    case 'screen-shop': goToShop(); break;
     case 'screen-compound':
       goToCompound();
       if (saved.compoundDone) restoreCompoundDone(saved.compoundDone);
@@ -1625,6 +2008,7 @@ function restoreState() {
 }
 
 // init
+loadRewards();
 restoreState();
 </script>
 <script>
