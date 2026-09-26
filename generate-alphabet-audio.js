@@ -27,7 +27,7 @@ const LETTERS = {
   p: 'Pe.... de la pinguin.',     q: 'Chiu.... de la cuoca.',    r: 'Er.... de la robot.',
   s: 'Es.... de la sanie.',       s2: 'Șe.... de la școală.',    t: 'Te.... de la tren.',
   t2: 'Țe.... de la țestoasă.',   u: 'U.... de la umbrelă.',     v: 'Ve.... de la vapor.',
-  w: 'Dublu ve.... de la Vilma.', x: 'Ics.... de la xilofon.',   y: 'I grec.... de la ioga.',
+  w: 'Dublu ve.... de la uai-fai.', x: 'Ics.... de la xilofon.',   y: 'I grec.... de la ioga.',
   z: 'Zet.... de la zmeu.',
 };
 
