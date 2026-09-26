@@ -18,17 +18,19 @@ const OUT_DIR = path.join(__dirname, 'audio');
 
 // key -> text rostit
 const LETTERS = {
-  a: 'A.... de la avion.',        a2: 'Ă.... de la mătură.',     a3: 'Â.... de la fântână.',
-  b: 'Be.... de la balon.',       c: 'Ce.... de la casă.',       d: 'De.... de la delfin.',
-  e: 'E.... de la elicopter.',    f: 'Ef.... de la fluture.',    g: 'Ge.... de la gorilă.',
-  h: 'Haș.... de la hipopotam.',  i: 'I.... de la inimă.',       i2: 'Î.... de la înghețată.',
-  j: 'Je.... de la jucărie.',     k: 'Ca.... de la koala.',      l: 'El.... de la lebădă.',
-  m: 'Em.... de la mașină.',      n: 'En.... de la nor.',        o: 'O.... de la ou.',
-  p: 'Pe.... de la pinguin.',     q: 'Chiu.... de la cuoca.',    r: 'Er.... de la robot.',
-  s: 'Es.... de la sanie.',       s2: 'Șe.... de la școală.',    t: 'Te.... de la tren.',
-  t2: 'Țe.... de la țestoasă.',   u: 'U.... de la umbrelă.',     v: 'Ve.... de la vapor.',
-  w: 'Dublu ve.... de la uai-fai.', x: 'Ics.... de la xilofon.',   y: 'I grec.... de la ioga.',
-  z: 'Zet.... de la zmeu.',
+  // SUNETUL literei, nu numele ei (M = "Mmmâ", nu "em"). Punct la final ca să pronunțe corect.
+  // m, a3 (Â), s2 (Ș) au fost făcute manual de Meli în ElevenLabs -> nu le regenera.
+  a: 'Aaa ... de la avion.',      a2: 'Ăăă ... de la mătură.',   a3: 'Îîî ... de la fântână.',
+  b: 'Bâ ... de la balon.',       c: 'Câ ... de la casă.',       d: 'Dâ ... de la delfin.',
+  e: 'Eee ... de la elicopter.',  f: 'Fff ... de la fluture.',   g: 'Gâ ... de la gorilă.',
+  h: 'Hhh ... de la hipopotam.',  i: 'Iii ... de la inimă.',     i2: 'Îîî ... de la înghețată.',
+  j: 'Jjj ... de la jucărie.',    k: 'Kâ ... de la koala.',      l: 'Lllâ ... de la lebădă.',
+  m: 'Mmmâ ... de la mașină.',    n: 'Nnnâ ... de la nor.',      o: 'Ooo ... de la ou.',
+  p: 'Pâ ... de la pinguin.',     q: 'Kâ ... de la cuoca.',      r: 'Rrrâ ... de la robot.',
+  s: 'Sss ... de la sanie.',      s2: 'Șș .... de la școală.',   t: 'Tâ ... de la tren.',
+  t2: 'Țâ ... de la țestoasă.',   u: 'Uuu ... de la umbrelă.',   v: 'Vvv ... de la vapor.',
+  w: 'Uuu ... de la uai-fai.',    x: 'Cs ... de la xilofon.',    y: 'Iii ... de la ioga.',
+  z: 'Zzz ... de la zmeu.',
 };
 
 function tts(text) {
