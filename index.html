@@ -389,6 +389,40 @@
     @keyframes readyPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.04)} }
     body.level-kleintjes .done-btn { font-size: 1.3rem; padding: 18px; }
     .sound-detail .done-btn { margin: 14px 0 0; }
+
+    /* ===== PAUZE + ZUZI DOARME + REGULI ===== */
+    .streak-card { position: relative; }
+    .streak-help { position: absolute; top: 8px; right: 10px; width: 26px; height: 26px; border-radius: 50%; border: 2px solid #FFCC80; background: white; color: #E64A19; font-family: 'Baloo 2', cursive; font-weight: 800; font-size: 0.9rem; cursor: pointer; line-height: 1; }
+    .streak-pauses { font-size: 0.72rem; color: var(--text-light); margin-top: 4px; font-weight: 600; }
+    .week-dot.rest i { background: #E8EAF6; font-size: 0.75rem; }
+    .home-welcome { position: relative; border-radius: 28px; padding: 6px 10px 12px; transition: background 0.6s ease, color 0.6s ease; }
+    .night-sky { display: none; position: absolute; inset: 0; pointer-events: none; border-radius: 28px; overflow: hidden; }
+    .night-sky .moon { position: absolute; right: 16px; top: 10px; font-size: 1.8rem; }
+    .night-sky i { position: absolute; width: 5px; height: 5px; border-radius: 50%; background: #FFF59D; box-shadow: 0 0 6px #FFF59D; animation: twinkle 2s ease-in-out infinite; }
+    .night-sky i:nth-child(odd) { animation-delay: 0.7s; }
+    @keyframes twinkle { 0%,100%{opacity:0.3} 50%{opacity:1} }
+    .home-welcome.night { background: linear-gradient(160deg, #283593 0%, #5C6BC0 100%); color: white; box-shadow: var(--shadow-lg); margin-bottom: 16px; }
+    .home-welcome.night .night-sky { display: block; }
+    .home-welcome.night .welcome-text { color: white; }
+    .home-welcome.night .welcome-sub { color: #C5CAE9; }
+    .home-welcome.night .home-zuzi { filter: brightness(0.92); }
+    .home-welcome.night .home-zuzi.floating { animation: breathe 3.2s ease-in-out infinite; }
+    @keyframes breathe { 0%,100%{transform:scale(1)} 50%{transform:scale(1.035)} }
+    .home-welcome.waking { background: linear-gradient(160deg, #FFE082 0%, #FFF8E1 100%); }
+    .zuzi-wrap { position: relative; width: fit-content; margin: 0 auto; }
+    .zzz { position: absolute; right: -26px; top: 8px; font-weight: 800; color: white; pointer-events: none; }
+    .zzz span { position: absolute; opacity: 0; animation: zfloat 3s ease-in infinite; font-size: 1.2rem; }
+    .zzz span:nth-child(2) { animation-delay: 1s; font-size: 1.5rem; }
+    .zzz span:nth-child(3) { animation-delay: 2s; font-size: 1.9rem; }
+    @keyframes zfloat { 0%{opacity:0;transform:translate(0,30px)} 30%{opacity:1} 100%{opacity:0;transform:translate(22px,-30px)} }
+    .wake-btn { margin-top: 10px; padding: 12px 22px; border: none; border-radius: 18px; background: linear-gradient(120deg, #FFD54F, #FFB300); color: #5D4037; font-family: 'Baloo 2', cursive; font-size: 1.1rem; font-weight: 800; cursor: pointer; box-shadow: 0 6px 16px rgba(255,179,0,0.45); animation: readyPulse 1.6s ease-in-out infinite; position: relative; }
+    body.level-kleintjes .wake-btn { font-size: 1.3rem; padding: 15px 26px; }
+    .rules-card { max-width: 360px; padding: 26px 22px; }
+    .rules-card .reward-title { font-size: 1.5rem; }
+    .rules-list { list-style: none; text-align: left; margin: 12px 0 18px; display: flex; flex-direction: column; gap: 9px; }
+    .rules-list li { font-size: 0.92rem; line-height: 1.4; color: var(--text); background: #FFF8E1; border-radius: 14px; padding: 8px 12px; }
+    .shop-tile.special { border: 3px dashed #7E57C2; }
+    .shop-tile.special.owned { border-style: solid; }
   </style>
 </head>
 <body>
@@ -485,10 +519,15 @@
       <div class="level-badge" id="home-level-badge" onclick="goToLevel()" style="cursor:pointer">🌟 ▾</div>
     </div>
   </div>
-  <div class="home-welcome">
-    <div class="zuzi-dressed home-zuzi floating" id="home-zuzi" onclick="goToShop()" role="button" aria-label="Zuzi"></div>
+  <div class="home-welcome" id="home-welcome">
+    <div class="night-sky" aria-hidden="true"><span class="moon">🌙</span><i style="left:12%;top:18%"></i><i style="left:80%;top:30%"></i><i style="left:24%;top:62%"></i><i style="left:70%;top:70%"></i><i style="left:88%;top:12%"></i></div>
+    <div class="zuzi-wrap">
+      <div class="zuzi-dressed home-zuzi floating" id="home-zuzi" onclick="zuziSleeping() ? wakeZuzi() : goToShop()" role="button" aria-label="Zuzi"></div>
+      <div class="zzz" id="zzz" style="display:none" aria-hidden="true"><span>z</span><span>z</span><span>Z</span></div>
+    </div>
     <div class="welcome-text" id="home-welcome-text">Bună ziua! 👋</div>
     <div class="welcome-sub"  id="home-welcome-sub">Ce facem azi?</div>
+    <button class="wake-btn" id="wake-btn" style="display:none" onclick="wakeZuzi()">Trezește-o pe Zuzi! ☀️</button>
   </div>
   <div class="streak-card" id="streak-card"></div>
   <button class="shop-btn" onclick="goToShop()">
@@ -611,6 +650,16 @@
 </div>
 
 <div class="sb-toast" id="sb-toast"></div>
+
+<!-- ===== REGULI STREAK (pentru parinte) ===== -->
+<div class="reward-overlay" id="rules-overlay">
+  <div class="reward-card rules-card">
+    <img src="/images/zuzi-mascot.png" alt="Zuzi" style="height:80px;width:auto;display:block;margin:0 auto 6px">
+    <div class="reward-title" id="rules-title">Focul lui Zuzi 🔥</div>
+    <ul class="rules-list" id="rules-list"></ul>
+    <button class="reward-continue" id="rules-btn" onclick="closeRules()">Am înțeles!</button>
+  </div>
+</div>
 
 <!-- ===== REWARD ===== -->
 <div class="reward-overlay" id="reward-overlay">
@@ -1191,6 +1240,12 @@ const ZUZI_ITEMS = [
     svg:`<g transform="${ZF.face}">
       ${[-42,42].map(x=>`<path transform="translate(${x} 2)" d="M0 -36 L10 -12 36 -11 16 6 23 32 0 17 -23 32 -16 6 -36 -11 -10 -12 Z" fill="#FFD54F" fill-opacity="0.92" ${OL}/>`).join('')}
       <path d="M-12 -6 Q0 -14 12 -6" fill="none" stroke="#37474F" stroke-width="4" stroke-linecap="round"/></g>` },
+  { id:'sunnies', slot:'face', price:0, special:'weekend', box:[45,90,190,95],
+    svg:`<g transform="${ZF.face}">
+      ${[-42,42].map(x=>`<path transform="translate(${x} 0)" d="M-30 -18 Q0 -24 30 -18 Q32 8 18 22 Q0 30 -18 22 Q-32 8 -30 -18 Z" fill="#263238" fill-opacity="0.92" stroke="#FF7043" stroke-width="5" stroke-linejoin="round"/>`).join('')}
+      <path d="M-12 -12 Q0 -18 12 -12" fill="none" stroke="#FF7043" stroke-width="5" stroke-linecap="round"/>
+      <path d="M-72 -14 L-90 -20 M72 -14 L90 -20" stroke="#FF7043" stroke-width="5" stroke-linecap="round"/>
+      <path d="M-58 -8 L-44 -12 M26 -8 L40 -12" stroke="white" stroke-width="4" stroke-linecap="round" opacity="0.8"/></g>` },
   // ---- NECK ----
   { id:'bowtie', slot:'neck', price:15, box:[70,195,85,65],
     svg:`<g transform="${ZF.neck}">
@@ -1231,7 +1286,20 @@ const REWARD_UI = {
     slots: { head:'🎩 Pe cap', face:'👓 Ochelari', neck:'🎀 La gât' },
     buy: p => `Cumpără pentru ⭐ ${p}`, wear: 'Pune-i-l lui Zuzi ✨', takeOff: 'Scoate-l', need: n => `Mai ai nevoie de ${n} ⭐`,
     pick: 'Alege un accesoriu de mai jos', owned: '✓', wearing: 'Poartă', bought: 'Super! Zuzi arată grozav! 🎉',
-    items: { bow:'Fundiță', cap:'Șapcă', flowers:'Coroniță de flori', tophat:'Joben', wizard:'Pălărie de vrăjitor', crown:'Coroană', glasses:'Ochelari', hearts:'Ochelari inimioare', stars:'Ochelari steluțe', bowtie:'Papion', scarf:'Fular', medal:'Medalie' },
+    weekendToast: '⭐ Bonus de weekend: +3 steluțe!',
+    weekendItem: '😎 Weekend complet! Zuzi a primit ochelari de soare!',
+    specialHint: 'Se câștigă exersând sâmbăta și duminica',
+    specialTag: '🌙 Weekend',
+    pausesLeft: n => n === 1 ? 'Mai ai 1 zi de pauză săptămâna asta' : (n ? `Mai ai ${n} zile de pauză săptămâna asta` : 'Nu mai ai zile de pauză săptămâna asta'),
+    sleepTitle: 'Zuzi doarme... 😴', sleepSub: 'E weekend! Vrei să exersați împreună?',
+    wakeBtn: 'Trezește-o pe Zuzi! ☀️', goodMorning: '☀️ Bună dimineața, Zuzi!',
+    rulesTitle: 'Focul lui Zuzi 🔥',
+    rules: ['🔥 Exersați în fiecare zi ca focul să crească. O zi contează când copilul câștigă o steluță.',
+            '🌙 Aveți 2 zile de pauză pe săptămână. Dacă lipsiți o zi sau două, seria nu se pierde.',
+            '😴 În weekend Zuzi doarme. Copilul o poate trezi ca să exerseze.',
+            '⭐ Bonus de weekend: +3 steluțe sâmbăta și duminica. Un weekend întreg aduce un accesoriu special pentru Zuzi!'],
+    rulesBtn: 'Am înțeles!',
+    items: { bow:'Fundiță', cap:'Șapcă', flowers:'Coroniță de flori', tophat:'Joben', wizard:'Pălărie de vrăjitor', crown:'Coroană', glasses:'Ochelari', hearts:'Ochelari inimioare', stars:'Ochelari steluțe', bowtie:'Papion', scarf:'Fular', medal:'Medalie', sunnies:'Ochelari de soare' },
   },
   EN: {
     streakTitle: n => n ? `${n} day${n===1?'':'s'} in a row!` : 'Light the fire!',
@@ -1246,7 +1314,20 @@ const REWARD_UI = {
     slots: { head:'🎩 Hats', face:'👓 Glasses', neck:'🎀 Neck' },
     buy: p => `Buy for ⭐ ${p}`, wear: 'Put it on Zuzi ✨', takeOff: 'Take it off', need: n => `You need ${n} more ⭐`,
     pick: 'Pick an item below', owned: '✓', wearing: 'Wearing', bought: 'Yay! Zuzi looks great! 🎉',
-    items: { bow:'Bow', cap:'Cap', flowers:'Flower crown', tophat:'Top hat', wizard:'Wizard hat', crown:'Crown', glasses:'Glasses', hearts:'Heart glasses', stars:'Star glasses', bowtie:'Bow tie', scarf:'Scarf', medal:'Medal' },
+    weekendToast: '⭐ Weekend bonus: +3 stars!',
+    weekendItem: '😎 Full weekend! Zuzi got sunglasses!',
+    specialHint: 'Earned by practising on Saturday and Sunday',
+    specialTag: '🌙 Weekend',
+    pausesLeft: n => n === 1 ? '1 rest day left this week' : (n ? `${n} rest days left this week` : 'No rest days left this week'),
+    sleepTitle: 'Zuzi is sleeping... 😴', sleepSub: "It's the weekend! Want to practise together?",
+    wakeBtn: 'Wake Zuzi up! ☀️', goodMorning: '☀️ Good morning, Zuzi!',
+    rulesTitle: "Zuzi's fire 🔥",
+    rules: ['🔥 Practise every day to make the fire grow. A day counts when your child earns a star.',
+            '🌙 You get 2 rest days per week. Missing a day or two will not break the streak.',
+            '😴 At the weekend Zuzi sleeps. Your child can wake her up to practise.',
+            '⭐ Weekend bonus: +3 stars on Saturday and Sunday. A full weekend unlocks a special item for Zuzi!'],
+    rulesBtn: 'Got it!',
+    items: { bow:'Bow', cap:'Cap', flowers:'Flower crown', tophat:'Top hat', wizard:'Wizard hat', crown:'Crown', glasses:'Glasses', hearts:'Heart glasses', stars:'Star glasses', bowtie:'Bow tie', scarf:'Scarf', medal:'Medal', sunnies:'Sunglasses' },
   },
   NL: {
     streakTitle: n => n ? `${n} dag${n===1?'':'en'} op rij!` : 'Steek het vuurtje aan!',
@@ -1261,7 +1342,20 @@ const REWARD_UI = {
     slots: { head:'🎩 Hoedjes', face:'👓 Brillen', neck:'🎀 Hals' },
     buy: p => `Koop voor ⭐ ${p}`, wear: 'Doe het Zuzi aan ✨', takeOff: 'Doe het uit', need: n => `Je hebt nog ${n} ⭐ nodig`,
     pick: 'Kies iets hieronder', owned: '✓', wearing: 'Draagt', bought: 'Joepie! Zuzi ziet er top uit! 🎉',
-    items: { bow:'Strik', cap:'Pet', flowers:'Bloemenkrans', tophat:'Hoge hoed', wizard:'Tovenaarshoed', crown:'Kroon', glasses:'Bril', hearts:'Hartjesbril', stars:'Sterrenbril', bowtie:'Vlinderdas', scarf:'Sjaal', medal:'Medaille' },
+    weekendToast: '⭐ Weekendbonus: +3 sterren!',
+    weekendItem: '😎 Heel het weekend! Zuzi kreeg een zonnebril!',
+    specialHint: 'Verdien je door zaterdag en zondag te oefenen',
+    specialTag: '🌙 Weekend',
+    pausesLeft: n => n === 1 ? 'Nog 1 rustdag deze week' : (n ? `Nog ${n} rustdagen deze week` : 'Geen rustdagen meer deze week'),
+    sleepTitle: 'Zuzi slaapt... 😴', sleepSub: 'Het is weekend! Samen oefenen?',
+    wakeBtn: 'Maak Zuzi wakker! ☀️', goodMorning: '☀️ Goedemorgen, Zuzi!',
+    rulesTitle: 'Het vuurtje van Zuzi 🔥',
+    rules: ['🔥 Oefen elke dag, dan groeit het vuurtje. Een dag telt als je kind een ster verdient.',
+            '🌙 Je hebt 2 rustdagen per week. Een dag of twee missen breekt de reeks niet.',
+            '😴 In het weekend slaapt Zuzi. Je kind kan haar wakker maken om te oefenen.',
+            '⭐ Weekendbonus: +3 sterren op zaterdag en zondag. Een heel weekend geeft een speciaal accessoire voor Zuzi!'],
+    rulesBtn: 'Begrepen!',
+    items: { bow:'Strik', cap:'Pet', flowers:'Bloemenkrans', tophat:'Hoge hoed', wizard:'Tovenaarshoed', crown:'Kroon', glasses:'Bril', hearts:'Hartjesbril', stars:'Sterrenbril', bowtie:'Vlinderdas', scarf:'Sjaal', medal:'Medaille', sunnies:'Zonnebril' },
   },
 };
 function RU() { return REWARD_UI[currentLang] || REWARD_UI.RO; }
@@ -1278,25 +1372,69 @@ function saveRewards() { try { localStorage.setItem(REWARDS_KEY, JSON.stringify(
 
 function dayKey(d) { d = d || new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
 function dayOffset(n) { const d = new Date(); d.setHours(12,0,0,0); d.setDate(d.getDate() + n); return dayKey(d); }
-function liveStreak() { return (rewards.lastDay === dayOffset(0) || rewards.lastDay === dayOffset(-1)) ? rewards.streak : 0; }
+// Saptamana = luni..duminica. Pana la 2 zile ratate pe saptamana nu rup seria (zile de pauza).
+// Seria numara doar zilele in care s-a exersat.
+const PAUSES_PER_WEEK = 2;
+function parseDay(k) { const [y,m,d] = k.split('-').map(Number); return new Date(y, m-1, d, 12); }
+function weekKey(k) { const d = parseDay(k); d.setDate(d.getDate() - (d.getDay() + 6) % 7); return dayKey(d); }
+function isWeekendDay(k) { const w = parseDay(k).getDay(); return w === 0 || w === 6; }
+function streakInfo() {
+  const days = new Set(rewards.days);
+  const first = rewards.days.length ? rewards.days.slice().sort()[0] : null;
+  const misses = {}, excused = new Set();
+  let count = 0, alive = true;
+  if (!first) return { count: 0, excused, misses };
+  for (let i = 0; ; i--) {
+    const k = dayOffset(i);
+    if (k < first) break;
+    if (days.has(k)) { count++; continue; }
+    if (i === 0) continue; // ziua de azi nu s-a terminat inca
+    const w = weekKey(k);
+    misses[w] = (misses[w] || 0) + 1;
+    if (misses[w] > PAUSES_PER_WEEK) { alive = false; break; }
+    excused.add(k);
+  }
+  return { count, excused, misses };
+}
+function liveStreak() { return streakInfo().count; }
+function pausesLeftThisWeek() {
+  const days = new Set(rewards.days);
+  const first = rewards.days.length ? rewards.days.slice().sort()[0] : null;
+  const dow = (new Date().getDay() + 6) % 7;
+  let missed = 0;
+  for (let i = 1; i <= dow; i++) { const k = dayOffset(-i); if (first && k >= first && !days.has(k)) missed++; }
+  return Math.max(0, PAUSES_PER_WEEK - missed);
+}
 
 // Apelat la fiecare steluta castigata; conteaza doar prima din zi.
 function registerPractice() {
   const today = dayOffset(0);
-  if (rewards.lastDay === today) return;
-  rewards.streak = (rewards.lastDay === dayOffset(-1)) ? rewards.streak + 1 : 1;
+  if (rewards.days.includes(today)) return;
+  rewards.days = rewards.days.concat(today).slice(-120);
   rewards.lastDay = today;
-  rewards.days = rewards.days.filter(d => d !== today).concat(today).slice(-60);
-  rewards.best = Math.max(rewards.best || 0, rewards.streak);
-  saveRewards();
-  const bonus = streakBonus(rewards.streak);
-  if (bonus) {
-    stars += bonus;
-    document.querySelectorAll('.star-display').forEach(e => e.textContent = stars);
-    showToast(RU().bonusToast(rewards.streak, bonus), 3200);
-  } else {
-    showToast(RU().dayToast(rewards.streak));
+  const n = liveStreak();
+  rewards.streak = n;
+  rewards.best = Math.max(rewards.best || 0, n);
+  const u = RU();
+  const msgs = [];
+  let extra = streakBonus(n);
+  msgs.push(extra ? u.bonusToast(n, extra) : u.dayToast(n));
+  if (isWeekendDay(today)) {
+    extra += 3;
+    msgs.push(u.weekendToast);
+    // Weekend complet (sambata + duminica) -> accesoriu special
+    const other = dayOffset(parseDay(today).getDay() === 0 ? -1 : 1);
+    if (rewards.days.includes(other) && !rewards.owned.includes('sunnies')) {
+      rewards.owned.push('sunnies');
+      msgs.push(u.weekendItem);
+    }
   }
+  saveRewards();
+  if (extra) {
+    stars += extra;
+    document.querySelectorAll('.star-display').forEach(e => e.textContent = stars);
+  }
+  showToast(msgs.join('  '), msgs.length > 1 ? 4200 : 2600);
   renderStreak();
 }
 
@@ -1316,13 +1454,13 @@ const FLAME_SVG = `<svg viewBox="0 0 48 56" aria-hidden="true">
 function renderStreak() {
   const el = document.getElementById('streak-card');
   if (!el) return;
-  const u = RU(), n = liveStreak(), doneToday = rewards.lastDay === dayOffset(0);
+  const u = RU(), info = streakInfo(), n = info.count, doneToday = rewards.days.includes(dayOffset(0));
   const now = new Date(); const dow = (now.getDay() + 6) % 7; // 0 = luni
   let dots = '';
   for (let i = 0; i < 7; i++) {
-    const k = dayOffset(i - dow), done = rewards.days.includes(k);
-    const cls = ['week-dot', done ? 'done' : '', i === dow ? 'today' : '', i > dow ? 'future' : ''].join(' ');
-    dots += `<div class="${cls}"><i>${done ? '★' : ''}</i>${u.week[i]}</div>`;
+    const k = dayOffset(i - dow), done = rewards.days.includes(k), rest = !done && info.excused.has(k);
+    const cls = ['week-dot', done ? 'done' : '', rest ? 'rest' : '', i === dow ? 'today' : '', i > dow ? 'future' : ''].join(' ');
+    dots += `<div class="${cls}"><i>${done ? '★' : (rest ? '🌙' : '')}</i>${u.week[i]}</div>`;
   }
   el.innerHTML = `
     <div class="streak-flame ${doneToday ? 'on' : 'off'}">${FLAME_SVG}<div class="streak-num">${n}</div></div>
@@ -1330,23 +1468,82 @@ function renderStreak() {
       <div class="streak-title">${u.streakTitle(n)}</div>
       <div class="streak-sub">${doneToday ? u.streakDone : (n ? u.streakTodo : u.streakStart)}</div>
       <div class="week-dots">${dots}</div>
-    </div>`;
+      ${n ? `<div class="streak-pauses">${u.pausesLeft(pausesLeftThisWeek())}</div>` : ''}
+    </div>
+    <button class="streak-help" onclick="showRules()" aria-label="?">?</button>`;
 }
 
 // Zuzi + accesorii intr-un singur SVG (viewBox cu loc deasupra pentru palarii)
-function zuziSVG(equipped) {
+const SLEEP_SVG = {
+  face: `<g transform="${ZF.face}" class="sleep-mask">
+    <path d="M-80 -6 Q0 -30 80 -6 Q84 22 44 26 Q0 16 -44 26 Q-84 22 -80 -6 Z" fill="#7E57C2" stroke="#37474F" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M-60 6 Q-42 16 -24 6 M24 6 Q42 16 60 6" fill="none" stroke="white" stroke-width="4" stroke-linecap="round"/>
+    <path d="M-80 -4 L-100 -10 M80 -4 L100 -10" stroke="#7E57C2" stroke-width="6" stroke-linecap="round"/></g>`,
+  head: `<g transform="${ZF.head}" class="sleep-cap">
+    <path d="M-66 8 Q-60 -60 0 -70 Q40 -74 70 -40 Q96 -8 112 -18 Q100 10 66 8 Q0 20 -66 8 Z" fill="#5C6BC0" stroke="#37474F" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M-70 8 Q0 24 70 8" fill="none" stroke="white" stroke-width="10" stroke-linecap="round"/>
+    <circle cx="112" cy="-18" r="12" fill="white" stroke="#37474F" stroke-width="3"/>
+    <circle cx="-20" cy="-34" r="5" fill="#FFF59D"/><circle cx="22" cy="-48" r="4" fill="#FFF59D"/><circle cx="46" cy="-20" r="4" fill="#FFF59D"/></g>`,
+};
+function zuziSVG(equipped, sleeping) {
   const layers = ['neck','face','head'].map(slot => {
+    if (sleeping && SLEEP_SVG[slot]) return SLEEP_SVG[slot];
     const it = ZUZI_ITEMS.find(i => i.id === equipped[slot]);
     return it ? it.svg : '';
   }).join('');
   return `<svg viewBox="0 -100 290 468" role="img" aria-label="Zuzi"><image href="/images/zuzi-mascot.png" width="290" height="368"/>${layers}</svg>`;
 }
-function renderZuzi(id, equipped) { const el = document.getElementById(id); if (el) el.innerHTML = zuziSVG(equipped || rewards.equipped); }
+function renderZuzi(id, equipped, sleeping) { const el = document.getElementById(id); if (el) el.innerHTML = zuziSVG(equipped || rewards.equipped, sleeping); }
+
+// In weekend Zuzi doarme pana o trezeste copilul (sau pana exerseaza azi)
+function zuziSleeping() {
+  const today = dayOffset(0);
+  return isWeekendDay(today) && rewards.wokeDay !== today && !rewards.days.includes(today);
+}
+function wakeZuzi() {
+  rewards.wokeDay = dayOffset(0);
+  saveRewards();
+  const box = document.getElementById('home-welcome');
+  box.classList.add('waking');
+  const z = document.getElementById('home-zuzi');
+  z.classList.remove('floating'); z.classList.add('zuzi-wiggle');
+  setTimeout(() => {
+    box.classList.remove('waking');
+    z.classList.remove('zuzi-wiggle'); z.classList.add('floating');
+    renderHomeRewards();
+    launchConfetti();
+    showToast(RU().goodMorning);
+  }, 650);
+}
+
+// Popup cu regulile (pentru parinte), o singura data + butonul "?"
+function showRules() {
+  const u = RU();
+  document.getElementById('rules-title').textContent = u.rulesTitle;
+  document.getElementById('rules-list').innerHTML = u.rules.map(r => `<li>${r}</li>`).join('');
+  document.getElementById('rules-btn').textContent = u.rulesBtn;
+  document.getElementById('rules-overlay').classList.add('show');
+}
+function closeRules() {
+  document.getElementById('rules-overlay').classList.remove('show');
+  rewards.rulesSeen = 1; saveRewards();
+}
 
 function renderHomeRewards() {
   const u = RU();
-  renderZuzi('home-zuzi');
+  const sleeping = zuziSleeping();
+  renderZuzi('home-zuzi', null, sleeping);
+  const box = document.getElementById('home-welcome');
+  if (box) box.classList.toggle('night', sleeping);
+  const t = UI[currentLang];
+  setText('home-welcome-text', sleeping ? u.sleepTitle : t.welcome);
+  setText('home-welcome-sub', sleeping ? u.sleepSub : t.welcomeSub);
+  const wb = document.getElementById('wake-btn');
+  if (wb) { wb.textContent = u.wakeBtn; wb.style.display = sleeping ? '' : 'none'; }
+  const zz = document.getElementById('zzz');
+  if (zz) zz.style.display = sleeping ? '' : 'none';
   renderStreak();
+  if (!rewards.rulesSeen && document.getElementById('screen-home').classList.contains('active')) showRules();
   setText('shop-btn-title', u.shopBtn);
   setText('shop-btn-sub', u.shopBtnSub);
 }
@@ -1371,6 +1568,9 @@ function renderShop() {
 
   const wrap = document.getElementById('shop-action-wrap');
   if (!sel) { wrap.innerHTML = ''; }
+  else if (sel.special && !rewards.owned.includes(sel.id)) {
+    wrap.innerHTML = `<button class="shop-action" disabled>${u.specialHint}</button>`;
+  }
   else if (rewards.owned.includes(sel.id)) {
     const worn = rewards.equipped[sel.slot] === sel.id;
     wrap.innerHTML = `<button class="shop-action ${worn ? 'off' : 'wear'}" onclick="toggleWear('${sel.id}')">${worn ? u.takeOff : u.wear}</button>`;
@@ -1384,13 +1584,13 @@ function renderShop() {
   let html = '';
   ['head','face','neck'].forEach(slot => {
     html += `<div class="shop-slot-title">${u.slots[slot]}</div><div class="shop-grid">`;
-    ZUZI_ITEMS.filter(i => i.slot === slot).sort((a,b) => a.price - b.price).forEach(it => {
+    ZUZI_ITEMS.filter(i => i.slot === slot).sort((a,b) => (a.special ? 999 : a.price) - (b.special ? 999 : b.price)).forEach(it => {
       const owned = rewards.owned.includes(it.id), worn = rewards.equipped[slot] === it.id;
-      const cls = ['shop-tile', owned ? 'owned' : (stars < it.price ? 'locked' : ''), worn ? 'worn' : '', shopSel === it.id ? 'sel' : ''].join(' ');
+      const cls = ['shop-tile', owned ? 'owned' : ((it.special || stars < it.price) ? 'locked' : ''), it.special ? 'special' : '', worn ? 'worn' : '', shopSel === it.id ? 'sel' : ''].join(' ');
       html += `<button class="${cls}" onclick="selectShopItem('${it.id}')" aria-label="${u.items[it.id]}">
         ${worn ? `<span class="worn-tag">${u.wearing}</span>` : ''}
         <svg viewBox="${it.box.join(' ')}">${it.svg}</svg>
-        <span class="shop-price">${owned ? u.owned : '⭐ ' + it.price}</span></button>`;
+        <span class="shop-price">${owned ? u.owned : (it.special ? u.specialTag : '⭐ ' + it.price)}</span></button>`;
     });
     html += '</div>';
   });
@@ -1403,7 +1603,7 @@ function wiggleZuzi() {
 }
 function buyItem(id) {
   const it = ZUZI_ITEMS.find(i => i.id === id);
-  if (!it || rewards.owned.includes(id) || stars < it.price) return;
+  if (!it || it.special || rewards.owned.includes(id) || stars < it.price) return;
   stars -= it.price;
   document.querySelectorAll('.star-display').forEach(e => e.textContent = stars);
   rewards.owned.push(id);
