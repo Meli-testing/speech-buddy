@@ -219,11 +219,12 @@
     .animal-listen-btn:hover { background: var(--primary-dark); }
 
     /* ===== SOUNDS ===== */
-    .sound-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
-    .sound-btn { background: white; border: 3px solid transparent; border-radius: 18px; padding: 15px 8px; text-align: center; cursor: pointer; transition: all 0.2s; box-shadow: var(--shadow); font-family: 'Baloo 2', cursive; }
+    .sound-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-bottom: 20px; }
+    .sound-btn { min-width: 0; background: white; border: 3px solid transparent; border-radius: 18px; padding: 15px 8px; text-align: center; cursor: pointer; transition: all 0.2s; box-shadow: var(--shadow); font-family: 'Baloo 2', cursive; }
     .sound-btn:hover { transform: scale(1.05); }
     .sound-btn.active { border-color: var(--secondary); background: #E0F7F4; }
-    .sound-letter { font-size: 2rem; font-weight: 800; color: var(--secondary-dark); display: block; }
+    .sound-letter { font-size: 2rem; font-weight: 800; color: var(--secondary-dark); display: block; line-height: 1.2; }
+    .sound-letter.long { font-size: 1.3rem; line-height: 1.15; }
     .sound-detail { background: white; border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); display: none; animation: fadeIn 0.3s ease; margin-bottom: 22px; }
     .sound-detail.visible { display: block; }
     .sound-tip { display: flex; align-items: flex-start; gap: 11px; background: #E8F5E9; border-radius: 16px; padding: 13px; margin-bottom: 15px; }
@@ -1648,7 +1649,7 @@ function renderSoundGrid() {
     const btn = document.createElement('div');
     btn.className = 'sound-btn';
     btn.id = 'sbtn-'+i;
-    btn.innerHTML = `<span class="sound-letter">${s.sound}</span>`;
+    btn.innerHTML = `<span class="sound-letter${s.sound.length > 3 ? ' long' : ''}">${s.sound.replace('/', '/<wbr>')}</span>`;
     btn.onclick = () => selectSound(i);
     grid.appendChild(btn);
   });
