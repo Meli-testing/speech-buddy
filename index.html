@@ -390,6 +390,35 @@
     body.level-kleintjes .done-btn { font-size: 1.3rem; padding: 18px; }
     .sound-detail .done-btn { margin: 14px 0 0; }
 
+    /* ===== ALFABET (carte cu litere) ===== */
+    .abc-book { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; touch-action: pan-y; }
+    .abc-nav { flex-shrink: 0; width: 46px; height: 46px; border-radius: 50%; border: none; background: white; box-shadow: var(--shadow); font-size: 1.7rem; font-weight: 800; color: var(--text); cursor: pointer; font-family: 'Baloo 2', cursive; line-height: 1; }
+    .abc-nav:disabled { opacity: 0.3; cursor: default; }
+    .abc-tile { --c: #FF7043; position: relative; flex: 1; min-width: 0; background: white; border: 5px solid var(--c); border-radius: 28px; box-shadow: var(--shadow); padding: 14px 12px 12px; text-align: center; cursor: pointer; user-select: none; transition: transform 0.2s; }
+    .abc-tile:active { transform: scale(0.98); }
+    .abc-tile .heard-mark { top: 10px; right: 12px; width: 30px; height: 30px; font-size: 1rem; }
+    .abc-letters { display: flex; justify-content: center; align-items: baseline; gap: 10px; font-family: 'Baloo 2', cursive; font-weight: 800; color: var(--c); line-height: 1; }
+    .abc-up { font-size: 5.2rem; }
+    .abc-low { font-size: 3.8rem; }
+    .abc-pic { height: 150px; display: flex; align-items: center; justify-content: center; font-size: 7.5rem; line-height: 1; margin: 6px 0 4px; }
+    .abc-pic svg { width: 150px; height: 150px; }
+    .abc-word { font-size: 2rem; font-weight: 800; color: var(--text); letter-spacing: 1px; }
+    .abc-word b { color: var(--c); }
+    .abc-hint { margin-top: 4px; font-size: 0.95rem; font-weight: 800; color: var(--text-light); }
+    .abc-tile.playing { border-width: 5px; box-shadow: 0 0 0 6px rgba(255,213,79,0.45); }
+    .abc-tile.playing .abc-letters { animation: abcBounce 0.6s ease; }
+    @keyframes abcBounce { 0%,100%{transform:scale(1)} 40%{transform:scale(1.18)} 70%{transform:scale(0.95)} }
+    .abc-tile.slide-l { animation: abcSlideL 0.25s ease; }
+    .abc-tile.slide-r { animation: abcSlideR 0.25s ease; }
+    @keyframes abcSlideL { from{transform:translateX(40px);opacity:0} to{transform:none;opacity:1} }
+    @keyframes abcSlideR { from{transform:translateX(-40px);opacity:0} to{transform:none;opacity:1} }
+    .abc-count { text-align: center; font-weight: 800; color: var(--text-light); margin-bottom: 10px; }
+    .abc-strip { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 6px; margin-bottom: 14px; }
+    .abc-chip { border: 2px solid transparent; background: white; border-radius: 12px; padding: 6px 0; font-family: 'Baloo 2', cursive; font-size: 1.1rem; font-weight: 800; color: var(--text); box-shadow: var(--shadow); cursor: pointer; }
+    .abc-chip.heard { background: #E8F5E9; color: #2E7D32; }
+    .abc-chip.current { border-color: var(--text); }
+    @media (max-width: 360px) { .abc-up { font-size: 4.2rem; } .abc-low { font-size: 3rem; } .abc-pic { height: 120px; font-size: 6rem; } .abc-pic svg { width: 120px; height: 120px; } .abc-word { font-size: 1.6rem; } .abc-nav { width: 38px; height: 38px; } }
+
     /* ===== PAUZE + ZUZI DOARME + REGULI ===== */
     .streak-card { position: relative; }
     .streak-help { position: absolute; top: 8px; right: 10px; width: 26px; height: 26px; border-radius: 50%; border: 2px solid #FFCC80; background: white; color: #E64A19; font-family: 'Baloo 2', cursive; font-weight: 800; font-size: 0.9rem; cursor: pointer; line-height: 1; }
@@ -588,6 +617,25 @@
   <div class="sound-detail"  id="sound-detail"></div>
 </div>
 
+<!-- ===== SCREEN: ALFABET ===== -->
+<div id="screen-alphabet" class="screen">
+  <div class="app-header">
+    <button class="back-btn" onclick="goHome()">← <span class="back-text">Acasă</span></button>
+    <div class="stars-badge">⭐ <span class="star-display">0</span></div>
+  </div>
+  <div class="section-title">Alfabetul</div>
+  <div class="section-sub">Apasă pe literă ca să o auzi</div>
+  <div class="listen-progress" id="abc-progress"></div>
+  <div class="abc-book" id="abc-book">
+    <button class="abc-nav" id="abc-prev" onclick="abcGo(-1)" aria-label="Înapoi">‹</button>
+    <div class="abc-tile" id="abc-tile" onclick="playAbc()" role="button"></div>
+    <button class="abc-nav" id="abc-next" onclick="abcGo(1)" aria-label="Înainte">›</button>
+  </div>
+  <div class="abc-count" id="abc-count"></div>
+  <div class="abc-strip" id="abc-strip"></div>
+  <div id="abc-done"></div>
+</div>
+
 <!-- ===== SCREEN: COMPOUND WORDS ===== -->
 <div id="screen-compound" class="screen">
   <div class="app-header">
@@ -695,7 +743,7 @@ const UI = {
     levelNames:{ kleintjes:'Micuții', groeiers:'Cei care cresc', slimmerds:'Cei mari' },
     levelAges:{ kleintjes:'2 – 4 ani', groeiers:'4 – 6 ani', slimmerds:'6 – 7 ani' },
     levelDescs:{ kleintjes:'Exerciții de gură, primele cuvinte, butoane mari', groeiers:'Sunete, cuvinte, cuvinte compuse', slimmerds:'Propoziții, instrucțiuni pas cu pas, sunete dificile' },
-    nav:{ cards:'Carduri cu cuvinte', cardsSub:'Animale, fructe, culori...', mouth:'Exerciții de gură', mouthSub:'Limba și buzele', sounds:'Sunete și litere', soundsSub:'R, S, Ș, L și altele', animals:'Sunete de animale', animalsSub:'Ham ham, miau, oac oac...', compound:'Cuvinte compuse', compoundSub:'Pune cuvintele împreună', instructions:'Urmează pașii', instructionsSub:'Instrucțiuni pas cu pas', game:'Joc de potrivire', gameSub:'Potrivește imaginea cu cuvântul' },
+    nav:{ alphabet:'Alfabetul', alphabetSub:'Literele de la A la Z', cards:'Carduri cu cuvinte', cardsSub:'Animale, fructe, culori...', mouth:'Exerciții de gură', mouthSub:'Limba și buzele', sounds:'Sunete și litere', soundsSub:'R, S, Ș, L și altele', animals:'Sunete de animale', animalsSub:'Ham ham, miau, oac oac...', compound:'Cuvinte compuse', compoundSub:'Pune cuvintele împreună', instructions:'Urmează pașii', instructionsSub:'Instrucțiuni pas cu pas', game:'Joc de potrivire', gameSub:'Potrivește imaginea cu cuvântul' },
     cardsTitle:'Carduri cu cuvinte', cardsSub:'Apasă pe un card pentru a auzi',
     mouthTitle:'Exerciții de gură', mouthSub:'Fă mișcarea!',
     soundsTitle:'Sunete și litere', soundsSub:'Alege un sunet pentru a exersa',
@@ -1055,6 +1103,7 @@ const HOME_MENUS = {
     { id:'cards',        color:'orange', icon:'🖼️' },
     { id:'animals',      color:'teal',   icon:'🐾' },
     { id:'sounds',       color:'purple', icon:'🔤' },
+    { id:'alphabet',     color:'teal',   icon:'🔠', langs:['RO'] },
     { id:'compound',     color:'blue',   icon:'🔗' },
     { id:'game',         color:'yellow', icon:'🎮' },
   ],
@@ -1062,6 +1111,7 @@ const HOME_MENUS = {
     { id:'cards',        color:'orange', icon:'🖼️' },
     { id:'animals',      color:'teal',   icon:'🐾' },
     { id:'sounds',       color:'purple', icon:'🔤' },
+    { id:'alphabet',     color:'teal',   icon:'🔠', langs:['RO'] },
     { id:'compound',     color:'blue',   icon:'🔗' },
     { id:'instructions', color:'yellow', icon:'📋' },
     { id:'game',         color:'orange', icon:'🎮' },
@@ -1136,7 +1186,7 @@ function renderHomeCards() {
   const menu = HOME_MENUS[currentLevel];
   const container = document.getElementById('home-cards-container');
   container.innerHTML = '';
-  menu.forEach(item => {
+  menu.filter(item => !item.langs || item.langs.includes(currentLang)).forEach(item => {
     const nav = t.nav;
     const titleKey = item.id;
     const subKey   = item.id + 'Sub';
@@ -1161,6 +1211,7 @@ function navTo(id) {
     case 'mouth':        goToMouth();        break;
     case 'animals':      goToAnimals();      break;
     case 'sounds':       goToSounds();       break;
+    case 'alphabet':     goToAlphabet();     break;
     case 'compound':     goToCompound();     break;
     case 'instructions': goToInstructions(); break;
     case 'game':         goToGame();         break;
@@ -1623,7 +1674,7 @@ function toggleWear(id) {
 // ======================== ASCULTARE + "AM TERMINAT" (carduri, animale, sunete) ========================
 // Fiecare card ascultat primeste ✓. Butonul "Am terminat" se activeaza doar dupa ce toate au fost ascultate.
 // Recompensa se da o singura data pe zi pe sectiune; ✓-urile se golesc a doua zi.
-const SECTION_REWARD = { cards: 5, animals: 10, sounds: 2 };
+const SECTION_REWARD = { cards: 5, animals: 10, sounds: 2, alphabet: 5 };
 const DONE_UI = {
   RO: { done: 'Am terminat! ✅', locked: (a,b) => `Ascultă toate cardurile (${a}/${b})`, claimed: '✓ Gata pentru azi! Revino mâine', rewardTitle: 'Bravo! 🎉', rewardMsg: n => `Ai ascultat tot! Primești ${n} steluțe.` },
   EN: { done: 'All done! ✅', locked: (a,b) => `Listen to all the cards (${a}/${b})`, claimed: '✓ Done for today! Come back tomorrow', rewardTitle: 'Well done! 🎉', rewardMsg: n => `You listened to everything! You get ${n} stars.` },
@@ -1667,6 +1718,7 @@ function claimSection(section, type) {
   if (type === 'animals') refreshAnimalsProgress();
   else if (type === 'cards') refreshCardsProgress(currentCategory);
   else if (type === 'sounds' && lastSoundIndex !== null) refreshSoundProgress(lastSoundIndex);
+  else if (type === 'alphabet') refreshAbcProgress();
   showSectionReward(n);
 }
 
@@ -1876,6 +1928,119 @@ function selectSound(index) {
   refreshSoundProgress(index);
   setTimeout(() => detail.scrollIntoView({behavior:'smooth',block:'nearest'}), 100);
 }
+
+// ======================== ALFABET (doar RO) ========================
+// O literă pe ecran, ca într-o carte. Apăsare pe card = audio „A de la avion” (audio/alfabet-<key>-ro.mp3).
+const ABC_SVG = {
+  quad: '<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M8 60 L18 47 L38 45 L46 37 L68 37 L76 45 L94 49 L94 60 Q78 50 64 60 L40 60 Q24 50 8 60 Z" fill="#EF5350"/><rect x="45" y="30" width="24" height="8" rx="4" fill="#37474F"/><path d="M40 44 L33 24" stroke="#37474F" stroke-width="4" stroke-linecap="round"/><path d="M27 25 L40 22" stroke="#37474F" stroke-width="5" stroke-linecap="round"/><circle cx="13" cy="54" r="3.5" fill="#FFEE58"/><circle cx="25" cy="74" r="16" fill="#37474F"/><circle cx="25" cy="74" r="7" fill="#B0BEC5"/><circle cx="77" cy="74" r="16" fill="#37474F"/><circle cx="77" cy="74" r="7" fill="#B0BEC5"/></svg>',
+  xilofon: '<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M5 36 L95 47 M5 76 L95 65" stroke="#8D6E63" stroke-width="5" stroke-linecap="round"/><rect x="8" y="24" width="11" height="62" rx="3" fill="#EF5350"/><rect x="22" y="27" width="11" height="56" rx="3" fill="#FFA726"/><rect x="36" y="30" width="11" height="50" rx="3" fill="#FDD835"/><rect x="50" y="33" width="11" height="44" rx="3" fill="#66BB6A"/><rect x="64" y="36" width="11" height="38" rx="3" fill="#42A5F5"/><rect x="78" y="39" width="11" height="32" rx="3" fill="#AB47BC"/><path d="M18 4 L40 18 M90 4 L70 20" stroke="#8D6E63" stroke-width="3" stroke-linecap="round"/><circle cx="43" cy="20" r="5.5" fill="#E53935"/><circle cx="67" cy="22" r="5.5" fill="#1E88E5"/></svg>',
+};
+const ALPHABET = [
+  { key:'a',  up:'A', low:'a', word:'avion',     pic:'✈️' },
+  { key:'a2', up:'Ă', low:'ă', word:'mătură',    pic:'🧹' },
+  { key:'a3', up:'Â', low:'â', word:'fântână',   pic:'⛲' },
+  { key:'b',  up:'B', low:'b', word:'balon',     pic:'🎈' },
+  { key:'c',  up:'C', low:'c', word:'casă',      pic:'🏠' },
+  { key:'d',  up:'D', low:'d', word:'delfin',    pic:'🐬' },
+  { key:'e',  up:'E', low:'e', word:'elicopter', pic:'🚁' },
+  { key:'f',  up:'F', low:'f', word:'fluture',   pic:'🦋' },
+  { key:'g',  up:'G', low:'g', word:'gorilă',    pic:'🦍' },
+  { key:'h',  up:'H', low:'h', word:'hipopotam', pic:'🦛' },
+  { key:'i',  up:'I', low:'i', word:'inimă',     pic:'❤️' },
+  { key:'i2', up:'Î', low:'î', word:'înghețată', pic:'🍦' },
+  { key:'j',  up:'J', low:'j', word:'jucărie',   pic:'🧸' },
+  { key:'k',  up:'K', low:'k', word:'koala',     pic:'🐨' },
+  { key:'l',  up:'L', low:'l', word:'lebădă',    pic:'🦢' },
+  { key:'m',  up:'M', low:'m', word:'mașină',    pic:'🚗' },
+  { key:'n',  up:'N', low:'n', word:'nor',       pic:'☁️' },
+  { key:'o',  up:'O', low:'o', word:'ou',        pic:'🥚' },
+  { key:'p',  up:'P', low:'p', word:'pinguin',   pic:'🐧' },
+  { key:'q',  up:'Q', low:'q', word:'quad',      pic:ABC_SVG.quad },
+  { key:'r',  up:'R', low:'r', word:'robot',     pic:'🤖' },
+  { key:'s',  up:'S', low:'s', word:'sanie',     pic:'🛷' },
+  { key:'s2', up:'Ș', low:'ș', word:'școală',    pic:'🏫' },
+  { key:'t',  up:'T', low:'t', word:'tren',      pic:'🚂' },
+  { key:'t2', up:'Ț', low:'ț', word:'țestoasă',  pic:'🐢' },
+  { key:'u',  up:'U', low:'u', word:'umbrelă',   pic:'☂️' },
+  { key:'v',  up:'V', low:'v', word:'vapor',     pic:'🚢' },
+  { key:'w',  up:'W', low:'w', word:'wi-fi',     pic:'📶' },
+  { key:'x',  up:'X', low:'x', word:'xilofon',   pic:ABC_SVG.xilofon },
+  { key:'y',  up:'Y', low:'y', word:'yo-yo',     pic:'🪀' },
+  { key:'z',  up:'Z', low:'z', word:'zmeu',      pic:'🪁' },
+];
+const ABC_COLORS = ['#FF7043','#26C6A2','#BA68C8','#42A5F5','#FFB300','#EC407A','#66BB6A','#5C6BC0'];
+let abcIndex = 0;
+
+function goToAlphabet() {
+  const strip = document.getElementById('abc-strip');
+  strip.innerHTML = ALPHABET.map((l, i) => `<button class="abc-chip" data-key="${l.key}" onclick="abcJump(${i})">${l.up}</button>`).join('');
+  renderAbc(0);
+  showScreen('screen-alphabet');
+}
+function abcWordHtml(l) {
+  return [...l.word].map(ch => ch === l.low ? `<b>${ch}</b>` : ch).join('');
+}
+function renderAbc(dir) {
+  const l = ALPHABET[abcIndex];
+  const tile = document.getElementById('abc-tile');
+  tile.style.setProperty('--c', ABC_COLORS[abcIndex % ABC_COLORS.length]);
+  tile.innerHTML = `<span class="heard-mark">✓</span>
+    <div class="abc-letters"><span class="abc-up">${l.up}</span><span class="abc-low">${l.low}</span></div>
+    <div class="abc-pic">${l.pic}</div>
+    <div class="abc-word">${abcWordHtml(l)}</div>
+    <div class="abc-hint">🔊 Apasă să asculți</div>`;
+  tile.classList.remove('slide-l', 'slide-r', 'playing');
+  if (dir) { void tile.offsetWidth; tile.classList.add(dir > 0 ? 'slide-l' : 'slide-r'); }
+  document.getElementById('abc-prev').disabled = abcIndex === 0;
+  document.getElementById('abc-next').disabled = abcIndex === ALPHABET.length - 1;
+  document.getElementById('abc-count').textContent = `${abcIndex + 1} / ${ALPHABET.length}`;
+  document.querySelectorAll('#abc-strip .abc-chip').forEach((c, i) => c.classList.toggle('current', i === abcIndex));
+  refreshAbcProgress();
+}
+function refreshAbcProgress() {
+  const chips = [...document.querySelectorAll('#abc-strip .abc-chip')];
+  renderListenUI({ section: 'alphabet', type: 'alphabet', total: chips.length, keys: chips.map(c => c.dataset.key), items: chips, progressId: 'abc-progress', doneId: 'abc-done', label: '🔠' });
+  const tile = document.getElementById('abc-tile');
+  if (tile && ALPHABET[abcIndex]) tile.classList.toggle('heard', heardList('alphabet').includes(ALPHABET[abcIndex].key));
+}
+function abcGo(step) {
+  const n = abcIndex + step;
+  if (n < 0 || n >= ALPHABET.length) return;
+  abcIndex = n;
+  renderAbc(step);
+}
+function abcJump(i) {
+  if (i === abcIndex) { playAbc(); return; }
+  const dir = i > abcIndex ? 1 : -1;
+  abcIndex = i;
+  renderAbc(dir);
+  playAbc();
+}
+function playAbc() {
+  const l = ALPHABET[abcIndex];
+  if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+  const audio = new Audio(`/audio/alfabet-${l.key}-ro.mp3`);
+  currentAudio = audio;
+  audio.play().catch(() => console.warn('Lipseste audio pentru litera:', l.up));
+  const tile = document.getElementById('abc-tile');
+  tile.classList.remove('playing'); void tile.offsetWidth; tile.classList.add('playing');
+  setTimeout(() => tile.classList.remove('playing'), 1600);
+  markHeard('alphabet', l.key);
+  refreshAbcProgress();
+}
+// swipe stânga/dreapta pe telefon
+(function () {
+  const book = document.getElementById('abc-book');
+  if (!book) return;
+  let x0 = null, y0 = null;
+  book.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, { passive: true });
+  book.addEventListener('touchend', e => {
+    if (x0 === null) return;
+    const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0;
+    x0 = null;
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) abcGo(dx < 0 ? 1 : -1);
+  }, { passive: true });
+})();
 
 // ======================== COMPOUND WORDS ========================
 let currentCompoundItems = [];
@@ -2309,6 +2474,7 @@ function restoreState() {
     case 'screen-mouth': goToMouth(); break;
     case 'screen-animals': goToAnimals(); break;
     case 'screen-sounds': goToSounds(); break;
+    case 'screen-alphabet': if (currentLang === 'RO') goToAlphabet(); else showScreen('screen-home'); break;
     case 'screen-instructions': goToInstructions(); break;
     case 'screen-shop': goToShop(); break;
     case 'screen-compound':
