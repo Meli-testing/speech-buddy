@@ -390,6 +390,13 @@
     body.level-kleintjes .done-btn { font-size: 1.3rem; padding: 18px; }
     .sound-detail .done-btn { margin: 14px 0 0; }
 
+    /* ===== SAMSUNG INTERNET -> CHROME (Play Protect blocheaza instalarea din Samsung Internet) ===== */
+    .chrome-banner { position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 9000; background: white; border: 3px solid var(--blue); border-radius: 20px; box-shadow: var(--shadow-lg); padding: 12px 40px 12px 14px; font-weight: 700; font-size: 0.92rem; color: var(--text); max-width: 520px; margin: 0 auto; }
+    .chrome-banner b { display: block; font-size: 1rem; margin-bottom: 4px; }
+    .chrome-banner .cb-btn { display: block; width: 100%; margin-top: 10px; padding: 12px; border: none; border-radius: 14px; background: var(--blue); color: white; font-family: 'Baloo 2', cursive; font-size: 1.05rem; font-weight: 800; cursor: pointer; }
+    .chrome-banner .cb-close { position: absolute; top: 6px; right: 8px; width: 30px; height: 30px; border: none; background: none; font-size: 1.3rem; color: var(--text-light); cursor: pointer; }
+    .chrome-banner ol { margin: 6px 0 0 18px; }
+
     /* ===== ALFABET (carte cu litere) ===== */
     .abc-book { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; touch-action: pan-y; }
     .abc-nav { flex-shrink: 0; width: 46px; height: 46px; border-radius: 50%; border: none; background: white; box-shadow: var(--shadow); font-size: 1.7rem; font-weight: 800; color: var(--text); cursor: pointer; font-family: 'Baloo 2', cursive; line-height: 1; }
@@ -2507,6 +2514,47 @@ restoreState();
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js').catch(() => {}); });
   }
+
+  // Samsung Internet: instalarea PWA e blocata de Google Play Protect ("Unsafe app blocked").
+  // B: buton care deschide site-ul in Chrome. A (rezerva): daca nu exista Chrome, pasi scrisi.
+  (function () {
+    const ua = navigator.userAgent || '';
+    if (!/SamsungBrowser/i.test(ua)) return;
+    if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) return;
+    const params = new URLSearchParams(location.search);
+    const noChrome = params.has('nochrome');
+    try { if (!noChrome && sessionStorage.getItem('sbChromeBannerClosed')) return; } catch (e) {}
+
+    let lang = 'RO';
+    try { lang = (JSON.parse(localStorage.getItem('speechBuddyState')) || {}).lang || ''; } catch (e) {}
+    if (!lang) lang = /^nl/i.test(navigator.language) ? 'NL' : /^en/i.test(navigator.language) ? 'EN' : 'RO';
+    const T = {
+      RO: { title: '📲 Instalezi SpeechBuddy pe telefon?', text: 'Pe telefoanele Samsung, instalarea merge doar din Chrome.', btn: 'Deschide în Chrome', manual: 'Nu am găsit Chrome. Pași:', steps: ['Instalează Chrome din Play Store', 'Deschide Chrome și intră pe ' + location.host, 'Apasă ⋮ → „Adaugă pe ecranul de pornire”'] },
+      EN: { title: '📲 Install SpeechBuddy on your phone?', text: 'On Samsung phones, installing only works from Chrome.', btn: 'Open in Chrome', manual: 'Chrome was not found. Steps:', steps: ['Install Chrome from the Play Store', 'Open Chrome and go to ' + location.host, 'Tap ⋮ → "Add to Home screen"'] },
+      NL: { title: '📲 SpeechBuddy op je telefoon installeren?', text: 'Op Samsung-telefoons lukt installeren alleen via Chrome.', btn: 'Openen in Chrome', manual: 'Chrome niet gevonden. Stappen:', steps: ['Installeer Chrome via de Play Store', 'Open Chrome en ga naar ' + location.host, 'Tik op ⋮ → "Toevoegen aan startscherm"'] },
+    };
+    const t = T[lang] || T.RO;
+
+    const box = document.createElement('div');
+    box.className = 'chrome-banner';
+    box.setAttribute('role', 'dialog');
+    if (noChrome) {
+      box.innerHTML = `<button class="cb-close" aria-label="x">✕</button><b>${t.title}</b>${t.manual}<ol>${t.steps.map(s => `<li>${s}</li>`).join('')}</ol>`;
+    } else {
+      box.innerHTML = `<button class="cb-close" aria-label="x">✕</button><b>${t.title}</b>${t.text}<button class="cb-btn">🌐 ${t.btn}</button>`;
+      box.querySelector('.cb-btn').onclick = () => {
+        const url = location.host + location.pathname;
+        const fallback = encodeURIComponent(location.origin + location.pathname + '?nochrome=1');
+        location.href = `intent://${url}#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=${fallback};end`;
+      };
+    }
+    box.querySelector('.cb-close').onclick = () => {
+      box.remove();
+      try { sessionStorage.setItem('sbChromeBannerClosed', '1'); } catch (e) {}
+    };
+    const show = () => document.body.appendChild(box);
+    if (document.body) show(); else document.addEventListener('DOMContentLoaded', show);
+  })();
 </script>
 </body>
 </html>
