@@ -18,17 +18,17 @@ const OUT_DIR = path.join(__dirname, 'audio');
 
 // key -> text rostit
 const LETTERS = {
-  a: 'A, de la avion.',        a2: 'Ă, de la mătură.',     a3: 'Â, de la fântână.',
-  b: 'Be, de la balon.',       c: 'Ce, de la casă.',       d: 'De, de la delfin.',
-  e: 'E, de la elicopter.',    f: 'Ef, de la fluture.',    g: 'Ge, de la gorilă.',
-  h: 'Haș, de la hipopotam.',  i: 'I, de la inimă.',       i2: 'Î, de la înghețată.',
-  j: 'Je, de la jucărie.',     k: 'Ca, de la koala.',      l: 'El, de la lebădă.',
-  m: 'Em, de la mașină.',      n: 'En, de la nor.',        o: 'O, de la ou.',
-  p: 'Pe, de la pinguin.',     q: 'Chiu, de la cvad.',     r: 'Er, de la robot.',
-  s: 'Es, de la sanie.',       s2: 'Șe, de la școală.',    t: 'Te, de la tren.',
-  t2: 'Țe, de la țestoasă.',   u: 'U, de la umbrelă.',     v: 'Ve, de la vapor.',
-  w: 'Dublu ve, de la uai-fai.', x: 'Ics, de la xilofon.', y: 'I grec, de la io-io.',
-  z: 'Zet, de la zmeu.',
+  a: 'A.... de la avion.',        a2: 'Ă.... de la mătură.',     a3: 'Â.... de la fântână.',
+  b: 'Be.... de la balon.',       c: 'Ce.... de la casă.',       d: 'De.... de la delfin.',
+  e: 'E.... de la elicopter.',    f: 'Ef.... de la fluture.',    g: 'Ge.... de la gorilă.',
+  h: 'Haș.... de la hipopotam.',  i: 'I.... de la inimă.',       i2: 'Î.... de la înghețată.',
+  j: 'Je.... de la jucărie.',     k: 'Ca.... de la koala.',      l: 'El.... de la lebădă.',
+  m: 'Em.... de la mașină.',      n: 'En.... de la nor.',        o: 'O.... de la ou.',
+  p: 'Pe.... de la pinguin.',     q: 'Chiu.... de la cuoca.',    r: 'Er.... de la robot.',
+  s: 'Es.... de la sanie.',       s2: 'Șe.... de la școală.',    t: 'Te.... de la tren.',
+  t2: 'Țe.... de la țestoasă.',   u: 'U.... de la umbrelă.',     v: 'Ve.... de la vapor.',
+  w: 'Dublu ve.... de la Vilma.', x: 'Ics.... de la xilofon.',   y: 'I grec.... de la ioga.',
+  z: 'Zet.... de la zmeu.',
 };
 
 function tts(text) {

@@ -1932,7 +1932,7 @@ function selectSound(index) {
 // ======================== ALFABET (doar RO) ========================
 // O literă pe ecran, ca într-o carte. Apăsare pe card = audio „A de la avion” (audio/alfabet-<key>-ro.mp3).
 const ABC_SVG = {
-  quad: '<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M8 60 L18 47 L38 45 L46 37 L68 37 L76 45 L94 49 L94 60 Q78 50 64 60 L40 60 Q24 50 8 60 Z" fill="#EF5350"/><rect x="45" y="30" width="24" height="8" rx="4" fill="#37474F"/><path d="M40 44 L33 24" stroke="#37474F" stroke-width="4" stroke-linecap="round"/><path d="M27 25 L40 22" stroke="#37474F" stroke-width="5" stroke-linecap="round"/><circle cx="13" cy="54" r="3.5" fill="#FFEE58"/><circle cx="25" cy="74" r="16" fill="#37474F"/><circle cx="25" cy="74" r="7" fill="#B0BEC5"/><circle cx="77" cy="74" r="16" fill="#37474F"/><circle cx="77" cy="74" r="7" fill="#B0BEC5"/></svg>',
+  quokka: '<svg viewBox="0 0 100 100" aria-hidden="true"><ellipse cx="50" cy="76" rx="26" ry="21" fill="#A1887F"/><ellipse cx="50" cy="80" rx="15" ry="14" fill="#D7CCC8"/><circle cx="29" cy="18" r="10" fill="#A1887F"/><circle cx="71" cy="18" r="10" fill="#A1887F"/><circle cx="29" cy="18" r="5" fill="#F8BBD0"/><circle cx="71" cy="18" r="5" fill="#F8BBD0"/><ellipse cx="50" cy="40" rx="27" ry="24" fill="#A1887F"/><ellipse cx="50" cy="49" rx="15" ry="11" fill="#D7CCC8"/><circle cx="40" cy="36" r="4" fill="#3E2723"/><circle cx="60" cy="36" r="4" fill="#3E2723"/><circle cx="41.3" cy="34.7" r="1.3" fill="#fff"/><circle cx="61.3" cy="34.7" r="1.3" fill="#fff"/><ellipse cx="50" cy="45" rx="4.5" ry="3.2" fill="#3E2723"/><path d="M42 50 Q50 58 58 50" stroke="#3E2723" stroke-width="2.5" fill="none" stroke-linecap="round"/><circle cx="33" cy="47" r="4" fill="#F48FB1" opacity="0.6"/><circle cx="67" cy="47" r="4" fill="#F48FB1" opacity="0.6"/></svg>',
   xilofon: '<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M5 36 L95 47 M5 76 L95 65" stroke="#8D6E63" stroke-width="5" stroke-linecap="round"/><rect x="8" y="24" width="11" height="62" rx="3" fill="#EF5350"/><rect x="22" y="27" width="11" height="56" rx="3" fill="#FFA726"/><rect x="36" y="30" width="11" height="50" rx="3" fill="#FDD835"/><rect x="50" y="33" width="11" height="44" rx="3" fill="#66BB6A"/><rect x="64" y="36" width="11" height="38" rx="3" fill="#42A5F5"/><rect x="78" y="39" width="11" height="32" rx="3" fill="#AB47BC"/><path d="M18 4 L40 18 M90 4 L70 20" stroke="#8D6E63" stroke-width="3" stroke-linecap="round"/><circle cx="43" cy="20" r="5.5" fill="#E53935"/><circle cx="67" cy="22" r="5.5" fill="#1E88E5"/></svg>',
 };
 const ALPHABET = [
@@ -1955,7 +1955,7 @@ const ALPHABET = [
   { key:'n',  up:'N', low:'n', word:'nor',       pic:'☁️' },
   { key:'o',  up:'O', low:'o', word:'ou',        pic:'🥚' },
   { key:'p',  up:'P', low:'p', word:'pinguin',   pic:'🐧' },
-  { key:'q',  up:'Q', low:'q', word:'quad',      pic:ABC_SVG.quad },
+  { key:'q',  up:'Q', low:'q', word:'quokka',    pic:ABC_SVG.quokka },
   { key:'r',  up:'R', low:'r', word:'robot',     pic:'🤖' },
   { key:'s',  up:'S', low:'s', word:'sanie',     pic:'🛷' },
   { key:'s2', up:'Ș', low:'ș', word:'școală',    pic:'🏫' },
@@ -1963,9 +1963,9 @@ const ALPHABET = [
   { key:'t2', up:'Ț', low:'ț', word:'țestoasă',  pic:'🐢' },
   { key:'u',  up:'U', low:'u', word:'umbrelă',   pic:'☂️' },
   { key:'v',  up:'V', low:'v', word:'vapor',     pic:'🚢' },
-  { key:'w',  up:'W', low:'w', word:'wi-fi',     pic:'📶' },
+  { key:'w',  up:'W', low:'w', word:'Wilma',     pic:'👧' },
   { key:'x',  up:'X', low:'x', word:'xilofon',   pic:ABC_SVG.xilofon },
-  { key:'y',  up:'Y', low:'y', word:'yo-yo',     pic:'🪀' },
+  { key:'y',  up:'Y', low:'y', word:'yoga',      pic:'🧘' },
   { key:'z',  up:'Z', low:'z', word:'zmeu',      pic:'🪁' },
 ];
 const ABC_COLORS = ['#FF7043','#26C6A2','#BA68C8','#42A5F5','#FFB300','#EC407A','#66BB6A','#5C6BC0'];
@@ -1978,7 +1978,7 @@ function goToAlphabet() {
   showScreen('screen-alphabet');
 }
 function abcWordHtml(l) {
-  return [...l.word].map(ch => ch === l.low ? `<b>${ch}</b>` : ch).join('');
+  return [...l.word].map(ch => ch.toLowerCase() === l.low ? `<b>${ch}</b>` : ch).join('');
 }
 function renderAbc(dir) {
   const l = ALPHABET[abcIndex];
