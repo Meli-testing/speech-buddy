@@ -369,6 +369,25 @@
     /* ===== TOAST ===== */
     .sb-toast { position: fixed; left: 50%; top: 14px; transform: translate(-50%, -140%); z-index: 1100; max-width: 92%; width: max-content; background: white; border: 3px solid #FFB74D; border-radius: 20px; box-shadow: var(--shadow-lg); padding: 8px 16px; font-weight: 800; font-size: 0.98rem; text-align: center; transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1); pointer-events: none; }
     .sb-toast.show { transform: translate(-50%, 0); }
+
+    /* ===== LISTEN PROGRESS + "AM TERMINAT" ===== */
+    .heard-mark { position: absolute; top: 6px; right: 8px; width: 24px; height: 24px; border-radius: 50%; background: var(--correct); color: white; font-size: 0.85rem; font-weight: 800; display: none; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.15); }
+    .word-card, .animal-card, .sound-word-item { position: relative; }
+    .heard .heard-mark { display: flex; animation: popIn 0.3s cubic-bezier(0.34,1.56,0.64,1); }
+    .word-card.heard, .animal-card.heard { border-color: #A5D6A7; }
+    .sound-word-item.heard { background: #E8F5E9; }
+    .sound-word-item .heard-mark { position: static; flex-shrink: 0; }
+    .listen-progress { display: flex; align-items: center; gap: 10px; background: white; border-radius: 16px; padding: 8px 14px; box-shadow: var(--shadow); margin-bottom: 14px; font-weight: 800; font-size: 0.9rem; }
+    .listen-progress .lp-bar { flex: 1; height: 10px; background: #ECEFF1; border-radius: 6px; overflow: hidden; }
+    .listen-progress .lp-bar span { display: block; height: 100%; background: linear-gradient(90deg, #81C784, #43A047); border-radius: 6px; transition: width 0.4s ease; }
+    .done-btn { width: 100%; padding: 15px; margin: 4px 0 24px; border: none; border-radius: 18px; font-family: 'Baloo 2', cursive; font-size: 1.1rem; font-weight: 800; cursor: pointer; background: var(--correct); color: white; box-shadow: 0 6px 16px rgba(67,160,71,0.35); transition: all 0.2s; }
+    .done-btn:hover:not(:disabled) { transform: scale(1.02); }
+    .done-btn:disabled { background: #ECEFF1; color: var(--text-light); box-shadow: none; cursor: default; }
+    .done-btn.claimed:disabled { background: #E8F5E9; color: #2E7D32; }
+    .done-btn.ready { animation: readyPulse 1.4s ease-in-out infinite; }
+    @keyframes readyPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.04)} }
+    body.level-kleintjes .done-btn { font-size: 1.3rem; padding: 18px; }
+    .sound-detail .done-btn { margin: 14px 0 0; }
   </style>
 </head>
 <body>
@@ -488,7 +507,9 @@
   <div class="section-title" id="cards-title">Carduri</div>
   <div class="section-sub"   id="cards-sub">Apasă pentru a auzi</div>
   <div class="category-tabs" id="cat-tabs"></div>
+  <div class="listen-progress" id="cards-progress"></div>
   <div class="word-grid"     id="word-grid"></div>
+  <div id="cards-done"></div>
 </div>
 
 <!-- ===== SCREEN: MONDMOTORIEK ===== -->
@@ -510,7 +531,9 @@
   </div>
   <div class="section-title" id="animals-title">Sunete de animale</div>
   <div class="section-sub"   id="animals-sub">Apasă și repetă sunetul</div>
+  <div class="listen-progress" id="animals-progress"></div>
   <div class="animal-grid"   id="animal-grid"></div>
+  <div id="animals-done"></div>
 </div>
 
 <!-- ===== SCREEN: SOUNDS ===== -->
@@ -1396,6 +1419,96 @@ function toggleWear(id) {
   saveRewards(); renderShop(); wiggleZuzi();
 }
 
+// ======================== ASCULTARE + "AM TERMINAT" (carduri, animale, sunete) ========================
+// Fiecare card ascultat primeste ✓. Butonul "Am terminat" se activeaza doar dupa ce toate au fost ascultate.
+// Recompensa se da o singura data pe zi pe sectiune; ✓-urile se golesc a doua zi.
+const SECTION_REWARD = { cards: 5, animals: 10, sounds: 2 };
+const DONE_UI = {
+  RO: { done: 'Am terminat! ✅', locked: (a,b) => `Ascultă toate cardurile (${a}/${b})`, claimed: '✓ Gata pentru azi! Revino mâine', rewardTitle: 'Bravo! 🎉', rewardMsg: n => `Ai ascultat tot! Primești ${n} steluțe.` },
+  EN: { done: 'All done! ✅', locked: (a,b) => `Listen to all the cards (${a}/${b})`, claimed: '✓ Done for today! Come back tomorrow', rewardTitle: 'Well done! 🎉', rewardMsg: n => `You listened to everything! You get ${n} stars.` },
+  NL: { done: 'Klaar! ✅', locked: (a,b) => `Luister naar alle kaartjes (${a}/${b})`, claimed: '✓ Klaar voor vandaag! Kom morgen terug', rewardTitle: 'Goed zo! 🎉', rewardMsg: n => `Je hebt alles beluisterd! Je krijgt ${n} sterren.` },
+};
+function DU() { return DONE_UI[currentLang] || DONE_UI.RO; }
+
+function practiceToday() {
+  const today = dayOffset(0);
+  if (!rewards.practice || rewards.practice.day !== today) rewards.practice = { day: today, heard: {}, claimed: [] };
+  return rewards.practice;
+}
+function heardList(section) { return practiceToday().heard[section] || []; }
+function markHeard(section, key) {
+  const p = practiceToday();
+  const list = p.heard[section] || (p.heard[section] = []);
+  if (!list.includes(key)) { list.push(key); saveRewards(); }
+}
+function isClaimed(section) { return practiceToday().claimed.includes(section); }
+
+function addStars(n) {
+  stars += n;
+  document.querySelectorAll('.star-display').forEach(e => e.textContent = stars);
+  registerPractice();
+  saveState();
+}
+function showSectionReward(n) {
+  const d = DU();
+  document.getElementById('reward-stars').textContent = '⭐ +' + n;
+  document.getElementById('reward-title').textContent = d.rewardTitle;
+  document.getElementById('reward-msg').textContent = d.rewardMsg(n);
+  document.getElementById('reward-overlay').classList.add('show');
+  launchConfetti();
+}
+function claimSection(section, type) {
+  if (isClaimed(section)) return;
+  const n = SECTION_REWARD[type];
+  practiceToday().claimed.push(section);
+  saveRewards();
+  addStars(n);
+  if (type === 'animals') refreshAnimalsProgress();
+  else if (type === 'cards') refreshCardsProgress(currentCategory);
+  else if (type === 'sounds' && lastSoundIndex !== null) refreshSoundProgress(lastSoundIndex);
+  showSectionReward(n);
+}
+
+// Deseneaza bara de progres + butonul si pune ✓ pe elementele ascultate
+function renderListenUI(opts) {
+  const { section, type, total, keys, items, progressId, doneId, label } = opts;
+  const heard = heardList(section);
+  items.forEach((el, i) => el.classList.toggle('heard', heard.includes(keys[i])));
+  const count = keys.filter(k => heard.includes(k)).length;
+  const prog = progressId && document.getElementById(progressId);
+  if (prog) prog.innerHTML = `<span>${label}</span><div class="lp-bar"><span style="width:${Math.round(count/total*100)}%"></span></div><span>${count}/${total}</span>`;
+  const done = document.getElementById(doneId);
+  if (!done) return;
+  const d = DU();
+  if (isClaimed(section)) done.innerHTML = `<button class="done-btn claimed" disabled>${d.claimed}</button>`;
+  else if (count >= total) done.innerHTML = `<button class="done-btn ready" onclick="claimSection('${section}','${type}')">${d.done}</button>`;
+  else done.innerHTML = `<button class="done-btn" disabled>${d.locked(count, total)}</button>`;
+}
+
+function cardsSectionKey(cat) { return 'cards:' + currentLevel + ':' + cat; }
+function refreshCardsProgress(cat) {
+  const cards = [...document.querySelectorAll('#word-grid .word-card')];
+  const label = (UI[currentLang].cats[cat] || cat);
+  renderListenUI({ section: cardsSectionKey(cat), type: 'cards', total: cards.length, keys: cards.map(c => c.dataset.key), items: cards, progressId: 'cards-progress', doneId: 'cards-done', label });
+}
+function refreshAnimalsProgress() {
+  const cards = [...document.querySelectorAll('#animal-grid .animal-card')];
+  renderListenUI({ section: 'animals', type: 'animals', total: cards.length, keys: cards.map((c, i) => String(i)), items: cards, progressId: 'animals-progress', doneId: 'animals-done', label: '🐾' });
+}
+function soundSectionKey(index) { return 'sounds:' + currentLang + ':' + currentSoundList[index].sound; }
+let lastSoundIndex = null;
+function refreshSoundProgress(index) {
+  lastSoundIndex = index;
+  const items = [...document.querySelectorAll('#sound-detail .sound-word-item')];
+  renderListenUI({ section: soundSectionKey(index), type: 'sounds', total: items.length, keys: items.map((c, j) => String(j)), items, doneId: 'sound-done' });
+}
+function listenSoundWord(index, j) {
+  const w = currentSoundList[index].words[j];
+  speak(w.word, LANG_VOICE[currentLang]);
+  markHeard(soundSectionKey(index), String(j));
+  refreshSoundProgress(index);
+}
+
 
 // ======================== WORD CARDS ========================
 let currentCategory = 'animals';
@@ -1431,14 +1544,18 @@ function renderWordGrid(cat) {
     const card = document.createElement('div');
     card.className = 'word-card';
     const syl = item.SYL ? item.SYL[currentLang] : '';
-    card.innerHTML = `<span class="word-emoji">${item.emoji}</span><span class="word-text">${word}</span>${syl && syl !== word ? `<span class="word-syllables">${syl}</span>` : ''}<span class="word-listen">${t.listenBtn}</span>`;
+    card.dataset.key = item.EN || item.RO;
+    card.innerHTML = `<span class="heard-mark">✓</span><span class="word-emoji">${item.emoji}</span><span class="word-text">${word}</span>${syl && syl !== word ? `<span class="word-syllables">${syl}</span>` : ''}<span class="word-listen">${t.listenBtn}</span>`;
     card.onclick = () => {
       card.classList.add('playing');
       speak(word, LANG_VOICE[currentLang]);
       setTimeout(()=>card.classList.remove('playing'), 1600);
+      markHeard(cardsSectionKey(cat), card.dataset.key);
+      refreshCardsProgress(cat);
     };
     grid.appendChild(card);
   });
+  refreshCardsProgress(cat);
 }
 
 // ======================== MOUTH EXERCISES ========================
@@ -1488,12 +1605,14 @@ function goToAnimals() {
     card.className = 'animal-card';
     card.id = 'animal-' + i;
     card.innerHTML = `
+      <span class="heard-mark">✓</span>
       <span class="animal-big-emoji">${animal.emoji}</span>
       <span class="animal-sound-text">${animal.sound}</span>
       <button class="animal-listen-btn" onclick="speakAnimal('${animal.sound}',${i})">${t.listenBtn||'🔊 Ascultă'}</button>
     `;
     grid.appendChild(card);
   });
+  refreshAnimalsProgress();
   showScreen('screen-animals');
 }
 
@@ -1509,6 +1628,8 @@ function speakAnimal(sound, i) {
   } else {
     console.warn('Lipseste audio pentru sunetul:', sound);
   }
+  markHeard('animals', String(i));
+  refreshAnimalsProgress();
   setTimeout(() => card.classList.remove('active'), 1500);
 }
 
@@ -1538,17 +1659,20 @@ function selectSound(index) {
   document.querySelectorAll('.sound-btn').forEach((b,i) => b.classList.toggle('active', i===index));
   const detail = document.getElementById('sound-detail');
   detail.classList.add('visible');
-  const wordsHtml = sound.words.map((w) => `
-    <div class="sound-word-item">
+  const wordsHtml = sound.words.map((w, j) => `
+    <div class="sound-word-item" id="sw-${j}">
       <span class="sw-emoji">${w.emoji}</span>
       <span class="sw-word">${w.word}</span>
-      <button class="sw-btn sw-listen" onclick="speak('${w.word}','${LANG_VOICE[currentLang]}')">${t.listenBtn}</button>
+      <span class="heard-mark">✓</span>
+      <button class="sw-btn sw-listen" onclick="listenSoundWord(${index},${j})">${t.listenBtn}</button>
     </div>
   `).join('');
   detail.innerHTML = `
     <div class="sound-tip"><span class="tip-emoji">${sound.tipEmoji}</span><span class="tip-text">${sound.tip}</span></div>
     <div class="sound-words">${wordsHtml}</div>
+    <div id="sound-done"></div>
   `;
+  refreshSoundProgress(index);
   setTimeout(() => detail.scrollIntoView({behavior:'smooth',block:'nearest'}), 100);
 }
 
